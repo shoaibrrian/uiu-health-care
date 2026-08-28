@@ -1,8 +1,61 @@
-import { Link } from "react-router-dom";
-import { ArrowLeft, HeartPulse, ShieldCheck } from "lucide-react";
+import { FormEvent, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { ArrowLeft, HeartPulse, ShieldCheck, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function LoginPage() {
+  const navigate = useNavigate();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    setError("");
+    setLoading(true);
+
+    try {
+      const response = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Invalid email or password");
+      }
+
+      // Save authentication data
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+
+      // Redirect according to role
+      if (data.user.role === "admin") {
+        navigate("/admin");
+      } else {
+        navigate("/student");
+      }
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Something went wrong. Please try again.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#080C0B] font-sans text-[#F4F6F5]">
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
@@ -39,14 +92,24 @@ export default function LoginPage() {
             </div>
 
             <div className="rounded-3xl border border-white/[0.08] bg-white/[0.03] p-7 backdrop-blur-xl sm:p-8">
-              <form className="space-y-5">
+              <form onSubmit={handleLogin} className="space-y-5">
+                {error && (
+                  <div className="rounded-xl border border-[#E5484D]/20 bg-[#E5484D]/10 px-4 py-3 text-sm text-[#FF7777]">
+                    {error}
+                  </div>
+                )}
+
                 <div>
                   <label className="mb-2 block text-sm font-medium text-white/70">
                     University Email
                   </label>
+
                   <input
                     type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     placeholder="yourname@student.uiu.ac.bd"
+                    required
                     className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/20 focus:border-[#34E7A6]/50 focus:ring-2 focus:ring-[#34E7A6]/10"
                   />
                 </div>
@@ -67,16 +130,27 @@ export default function LoginPage() {
 
                   <input
                     type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter your password"
+                    required
                     className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/20 focus:border-[#34E7A6]/50 focus:ring-2 focus:ring-[#34E7A6]/10"
                   />
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full rounded-xl bg-[#34E7A6] py-3.5 text-sm font-bold text-[#080C0B] transition hover:bg-[#5CFFC0]"
+                  disabled={loading}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#34E7A6] py-3.5 text-sm font-bold text-[#080C0B] transition hover:bg-[#5CFFC0] disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  Sign in
+                  {loading ? (
+                    <>
+                      <Loader2 size={17} className="animate-spin" />
+                      Signing in...
+                    </>
+                  ) : (
+                    "Sign in"
+                  )}
                 </button>
               </form>
 
