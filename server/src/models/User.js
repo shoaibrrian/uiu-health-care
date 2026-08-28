@@ -6,6 +6,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
+      maxlength: 100,
     },
 
     email: {
@@ -35,14 +36,26 @@ const userSchema = new mongoose.Schema(
       trim: true,
     },
 
+    program: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
     phone: {
       type: String,
       trim: true,
+      default: "",
     },
 
     profileImage: {
       type: String,
       default: "",
+    },
+
+    isVerified: {
+      type: Boolean,
+      default: false,
     },
 
     isActive: {
