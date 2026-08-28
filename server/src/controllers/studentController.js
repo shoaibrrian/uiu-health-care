@@ -1,5 +1,6 @@
 import User from "../models/User.js";
 import SOSRequest from "../models/SOSRequest.js";
+import MedicalProfile from "../models/MedicalProfile.js";
 
 // =========================
 // GET STUDENT DASHBOARD
@@ -148,6 +149,129 @@ export const getSOSHistory = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Server error while loading SOS history.",
+    });
+  }
+};
+
+// =========================
+// GET MEDICAL PROFILE
+// =========================
+
+export const getMedicalProfile = async (req, res) => {
+  try {
+    const medicalProfile = await MedicalProfile.findOne({
+      student: req.user._id,
+    });
+
+    // Profile doesn't exist yet
+    if (!medicalProfile) {
+      return res.status(200).json({
+        success: true,
+        exists: false,
+        medicalProfile: null,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      exists: true,
+      medicalProfile,
+    });
+  } catch (error) {
+    console.error("Get medical profile error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Server error while loading medical profile.",
+    });
+  }
+};
+
+// =========================
+// CREATE / UPDATE MEDICAL PROFILE
+// =========================
+
+export const saveMedicalProfile = async (req, res) => {
+  try {
+    const {
+      bloodGroup,
+      allergies,
+      medicalConditions,
+      currentMedications,
+      emergencyContact,
+      additionalNotes,
+    } = req.body;
+
+    const medicalProfile = await MedicalProfile.findOneAndUpdate(
+      {
+        student: req.user._id,
+      },
+      {
+        student: req.user._id,
+        bloodGroup: bloodGroup || "",
+        allergies: Array.isArray(allergies) ? allergies : [],
+        medicalConditions: Array.isArray(medicalConditions)
+          ? medicalConditions
+          : [],
+        currentMedications: Array.isArray(currentMedications)
+          ? currentMedications
+          : [],
+        emergencyContact: {
+          name: emergencyContact?.name?.trim() || "",
+          relationship: emergencyContact?.relationship?.trim() || "",
+          phone: emergencyContact?.phone?.trim() || "",
+        },
+        additionalNotes: additionalNotes?.trim() || "",
+      },
+      {
+        new: true,
+        upsert: true,
+        runValidators: true,
+      },
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "Medical profile saved successfully.",
+      medicalProfile,
+    });
+  } catch (error) {
+    console.error("Save medical profile error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Server error while saving medical profile.",
+    });
+  }
+};
+
+// =========================
+// DELETE MEDICAL PROFILE
+// =========================
+
+export const deleteMedicalProfile = async (req, res) => {
+  try {
+    const medicalProfile = await MedicalProfile.findOneAndDelete({
+      student: req.user._id,
+    });
+
+    if (!medicalProfile) {
+      return res.status(404).json({
+        success: false,
+        message: "Medical profile not found.",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Medical profile deleted successfully.",
+    });
+  } catch (error) {
+    console.error("Delete medical profile error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Server error while deleting medical profile.",
     });
   }
 };
