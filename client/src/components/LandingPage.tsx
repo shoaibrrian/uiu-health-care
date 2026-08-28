@@ -7,6 +7,7 @@ import {
   ArrowRight,
   AlertTriangle,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const features = [
   {
@@ -38,6 +39,8 @@ const stats = [
 ];
 
 export default function LandingPage() {
+  const navigate = useNavigate();
+
   return (
     <div className="min-h-screen bg-[#080C0B] font-sans text-[#F4F6F5] selection:bg-[#34E7A6]/25">
       {/* ambient glow */}
@@ -53,23 +56,34 @@ export default function LandingPage() {
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#34E7A6]/10 text-[#34E7A6] ring-1 ring-[#34E7A6]/20">
               <HeartPulse size={16} />
             </div>
+
             <span className="text-[15px] font-semibold tracking-tight">
               UIU Health Care
             </span>
           </div>
+
           <div className="hidden items-center gap-8 text-sm text-white/50 sm:flex">
             <a href="#features" className="hover:text-white">
               Features
             </a>
+
             <a href="#about" className="hover:text-white">
               About
             </a>
           </div>
+
           <div className="flex items-center gap-3">
-            <button className="text-sm font-medium text-white/60 hover:text-white">
+            <button
+              onClick={() => navigate("/login")}
+              className="text-sm font-medium text-white/60 hover:text-white"
+            >
               Log in
             </button>
-            <button className="rounded-full bg-[#F4F6F5] px-5 py-2.5 text-sm font-semibold text-[#080C0B] transition-transform hover:scale-[1.03]">
+
+            <button
+              onClick={() => navigate("/register")}
+              className="rounded-full bg-[#F4F6F5] px-5 py-2.5 text-sm font-semibold text-[#080C0B] transition-transform hover:scale-[1.03]"
+            >
               Get Started
             </button>
           </div>
@@ -108,14 +122,21 @@ export default function LandingPage() {
         </motion.p>
 
         <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-          <button className="group flex items-center justify-center gap-2 rounded-full bg-[#34E7A6] px-7 py-3.5 text-sm font-semibold text-[#080C0B] transition-all hover:bg-[#5CFFC0]">
+          <button
+            onClick={() => navigate("/register")}
+            className="group flex items-center justify-center gap-2 rounded-full bg-[#34E7A6] px-7 py-3.5 text-sm font-semibold text-[#080C0B] transition-all hover:bg-[#5CFFC0]"
+          >
             Create your account
             <ArrowRight
               size={16}
               className="transition-transform group-hover:translate-x-0.5"
             />
           </button>
-          <button className="rounded-full border border-white/12 px-7 py-3.5 text-sm font-semibold text-white/70 hover:border-white/25 hover:text-white">
+
+          <button
+            onClick={() => navigate("/login?role=admin")}
+            className="rounded-full border border-white/12 px-7 py-3.5 text-sm font-semibold text-white/70 hover:border-white/25 hover:text-white"
+          >
             Admin login
           </button>
         </div>
@@ -129,16 +150,20 @@ export default function LandingPage() {
         >
           <div className="relative flex h-44 w-44 items-center justify-center">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#E5484D]/15 [animation-duration:2.4s]" />
+
             <span className="absolute inline-flex h-[80%] w-[80%] rounded-full bg-[#E5484D]/10" />
+
             <motion.div
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="relative z-10 flex h-28 w-28 flex-col items-center justify-center gap-1 rounded-full bg-gradient-to-b from-[#F0564D] to-[#D33A32] text-white shadow-[0_25px_50px_-12px_rgba(229,72,77,0.5)]"
             >
               <AlertTriangle size={24} strokeWidth={2.3} />
+
               <span className="text-sm font-bold tracking-wide">SOS</span>
             </motion.div>
           </div>
+
           <p className="mt-6 text-xs font-medium uppercase tracking-widest text-white/35">
             Emergency alert system
           </p>
@@ -151,6 +176,7 @@ export default function LandingPage() {
           <span className="text-[11px] font-semibold uppercase tracking-widest text-[#34E7A6]">
             Core features
           </span>
+
           <h2 className="mt-3 font-['Manrope'] text-3xl font-bold tracking-tight sm:text-4xl">
             Everything you need, in one place
           </h2>
@@ -169,7 +195,9 @@ export default function LandingPage() {
               <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/[0.05] text-[#34E7A6] transition-colors group-hover:bg-[#34E7A6] group-hover:text-[#080C0B]">
                 <f.icon size={19} />
               </div>
+
               <h3 className="mt-5 font-semibold">{f.title}</h3>
+
               <p className="mt-2 text-[13px] leading-relaxed text-white/40">
                 {f.desc}
               </p>
@@ -192,6 +220,7 @@ export default function LandingPage() {
               <p className="font-['Manrope'] text-5xl font-extrabold text-[#34E7A6]">
                 {s.value}
               </p>
+
               <p className="mt-2 text-sm text-white/40">{s.label}</p>
             </motion.div>
           ))}
@@ -205,6 +234,7 @@ export default function LandingPage() {
             © {new Date().getFullYear()} UIU Health Care — Student Healthcare
             Support System
           </p>
+
           <p className="text-xs text-white/20">
             United International University
           </p>
