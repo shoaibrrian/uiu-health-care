@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   AlertTriangle,
@@ -20,7 +21,6 @@ import {
   X,
   Loader2,
 } from "lucide-react";
-import { useState } from "react";
 
 const quickActions = [
   {
@@ -58,6 +58,8 @@ const recentAlerts = [
 export default function StudentDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showSOSModal, setShowSOSModal] = useState(false);
+  const [student, setStudent] = useState<any>(null);
+  const [dashboardLoading, setDashboardLoading] = useState(true);
   const [sosStatus, setSOSStatus] = useState<
     "idle" | "sending" | "active" | "resolved"
   >("idle");
@@ -77,14 +79,106 @@ export default function StudentDashboard() {
     setLocationEnabled(true);
   };
 
-  const sendSOS = () => {
+  const sendSOS = async () => {
     setSOSStatus("sending");
 
-    setTimeout(() => {
+    try {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        window.location.href = "/login";
+        return;
+      }
+
+      let latitude = null;
+      let longitude = null;
+
+      if (locationEnabled && navigator.geolocation) {
+        try {
+          const position = await new Promise<GeolocationPosition>(
+            (resolve, reject) => {
+              navigator.geolocation.getCurrentPosition(resolve, reject);
+            },
+          );
+
+          latitude = position.coords.latitude;
+          longitude = position.coords.longitude;
+        } catch {
+          console.log("Location permission denied.");
+        }
+      }
+
+      const response = await fetch("http://localhost:5000/api/student/sos", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          emergencyType,
+          message,
+          latitude,
+          longitude,
+          address: "",
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to send SOS");
+      }
+
       setSOSStatus("active");
       setShowSOSModal(false);
-    }, 1800);
+    } catch (error) {
+      console.error("SOS error:", error);
+
+      setSOSStatus("idle");
+
+      alert(error instanceof Error ? error.message : "Failed to send SOS.");
+    }
   };
+
+  useEffect(() => {
+    const loadDashboard = async () => {
+      try {
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+          window.location.href = "/login";
+          return;
+        }
+
+        const response = await fetch(
+          "http://localhost:5000/api/student/dashboard",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || "Failed to load dashboard");
+        }
+
+        setStudent(data.student);
+
+        if (data.sos.active) {
+          setSOSStatus("active");
+        }
+      } catch (error) {
+        console.error("Dashboard error:", error);
+      } finally {
+        setDashboardLoading(false);
+      }
+    };
+
+    loadDashboard();
+  }, []);
 
   const resolveSOS = () => {
     setSOSStatus("resolved");
