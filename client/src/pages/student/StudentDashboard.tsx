@@ -108,7 +108,7 @@ export default function StudentDashboard() {
         }
       }
 
-      const response = await fetch("http://localhost:5000/api/student/sos", {
+      const response = await fetch("http://localhost:5000/api/students/sos", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -151,7 +151,7 @@ export default function StudentDashboard() {
         }
 
         const response = await fetch(
-          "http://localhost:5000/api/student/dashboard",
+          "http://localhost:5000/api/students/dashboard",
           {
             headers: {
               Authorization: `Bearer ${token}`,
