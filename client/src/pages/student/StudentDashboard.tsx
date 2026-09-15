@@ -64,7 +64,7 @@ export default function StudentDashboard() {
     "idle" | "sending" | "active" | "resolved"
   >("idle");
 
-  const [emergencyType, setEmergencyType] = useState("Medical emergency");
+  const [emergencyType, setEmergencyType] = useState("medical");
   const [message, setMessage] = useState("");
   const [locationEnabled, setLocationEnabled] = useState(false);
 
@@ -722,14 +722,21 @@ export default function StudentDashboard() {
                     onChange={(e) => setEmergencyType(e.target.value)}
                     className="w-full rounded-xl border border-white/[0.08] bg-white/[0.03] px-4 py-3 text-sm text-white outline-none transition focus:border-[#34E7A6]/40"
                   >
-                    <option className="bg-[#0C1210]">Medical emergency</option>
-                    <option className="bg-[#0C1210]">Accident / Injury</option>
-                    <option className="bg-[#0C1210]">Severe illness</option>
-                    <option className="bg-[#0C1210]">
+                    <option value="medical" className="bg-[#0C1210]">
+                      Medical emergency
+                    </option>
+                    <option value="accident" className="bg-[#0C1210]">
+                      Accident
+                    </option>
+                    <option value="injury" className="bg-[#0C1210]">
+                      Injury
+                    </option>
+                    <option value="mental-health" className="bg-[#0C1210]">
                       Mental health crisis
                     </option>
-                    <option className="bg-[#0C1210]">Security emergency</option>
-                    <option className="bg-[#0C1210]">Other</option>
+                    <option value="other" className="bg-[#0C1210]">
+                      Other
+                    </option>
                   </select>
                 </div>
 
