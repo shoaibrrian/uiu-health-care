@@ -58,6 +58,13 @@ const sosRequestSchema = new mongoose.Schema(
       ref: "User",
       default: null,
     },
+
+    resolutionNote: {
+      type: String,
+      trim: true,
+      maxlength: 500,
+      default: "",
+    },
   },
   {
     timestamps: true,

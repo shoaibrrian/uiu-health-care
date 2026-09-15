@@ -1,6 +1,5 @@
-import bcrypt from "bcryptjs";
-import SOSRequest from "../models/SOSRequest.js";
 import User from "../models/User.js";
+import SOSRequest from "../models/SOSRequest.js";
 
 // =========================
 // GET ALL SOS REQUESTS
@@ -8,82 +7,25 @@ import User from "../models/User.js";
 
 export const getAllSOS = async (req, res) => {
   try {
-    const sosRequests = await SOSRequest.find()
-      .populate("student", "name email studentId program phone profileImage")
-      .populate("resolvedBy", "name email role")
-      .sort({ createdAt: -1 });
+    const { status } = req.query;
+
+    const filter = status ? { status } : {};
+
+    const requests = await SOSRequest.find(filter)
+      .sort({ createdAt: -1 })
+      .populate("student", "name email studentId program phone")
+      .populate("resolvedBy", "name email");
 
     return res.status(200).json({
       success: true,
-      count: sosRequests.length,
-      sos: sosRequests,
+      count: requests.length,
+      requests,
     });
   } catch (error) {
     console.error("Get all SOS error:", error);
-
     return res.status(500).json({
       success: false,
-      message: "Server error while fetching SOS requests.",
-    });
-  }
-};
-
-// =========================
-// GET PENDING SOS REQUESTS
-// =========================
-
-export const getPendingSOS = async (req, res) => {
-  try {
-    const sosRequests = await SOSRequest.find({
-      status: "pending",
-    })
-      .populate("student", "name email studentId program phone profileImage")
-      .sort({ createdAt: -1 });
-
-    return res.status(200).json({
-      success: true,
-      count: sosRequests.length,
-      sos: sosRequests,
-    });
-  } catch (error) {
-    console.error("Get pending SOS error:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Server error while fetching pending SOS requests.",
-    });
-  }
-};
-
-// =========================
-// GET SINGLE SOS
-// =========================
-
-export const getSOSById = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const sos = await SOSRequest.findById(id)
-      .populate("student", "name email studentId program phone profileImage")
-      .populate("resolvedBy", "name email role");
-
-    if (!sos) {
-      return res.status(404).json({
-        success: false,
-        message: "SOS request not found.",
-      });
-    }
-
-    return res.status(200).json({
-      success: true,
-      sos,
-    });
-  } catch (error) {
-    console.error("Get SOS by ID error:", error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Server error while fetching SOS request.",
+      message: "Server error while loading SOS requests.",
     });
   }
 };
@@ -94,9 +36,7 @@ export const getSOSById = async (req, res) => {
 
 export const acknowledgeSOS = async (req, res) => {
   try {
-    const { id } = req.params;
-
-    const sos = await SOSRequest.findById(id);
+    const sos = await SOSRequest.findById(req.params.id);
 
     if (!sos) {
       return res.status(404).json({
@@ -105,41 +45,29 @@ export const acknowledgeSOS = async (req, res) => {
       });
     }
 
-    if (sos.status === "resolved") {
-      return res.status(400).json({
-        success: false,
-        message: "This SOS request has already been resolved.",
-      });
-    }
-
-    if (sos.status === "acknowledged") {
-      return res.status(400).json({
-        success: false,
-        message: "This SOS request has already been acknowledged.",
-      });
-    }
-
     sos.status = "acknowledged";
     sos.acknowledgedAt = new Date();
-
     await sos.save();
 
-    const updatedSOS = await SOSRequest.findById(sos._id).populate(
-      "student",
-      "name email studentId program phone profileImage",
-    );
+    const populated = await SOSRequest.findById(sos._id)
+      .populate("student", "name email studentId program phone")
+      .populate("resolvedBy", "name email");
+
+    // Notify all admins + the specific student in real time
+    const io = req.app.get("io");
+    io.to("admins").emit("sos:updated", populated);
+    io.to(`student-${sos.student}`).emit("sos:updated", populated);
 
     return res.status(200).json({
       success: true,
-      message: "SOS request acknowledged successfully.",
-      sos: updatedSOS,
+      message: "SOS acknowledged.",
+      sos: populated,
     });
   } catch (error) {
     console.error("Acknowledge SOS error:", error);
-
     return res.status(500).json({
       success: false,
-      message: "Server error while acknowledging SOS request.",
+      message: "Server error while acknowledging SOS.",
     });
   }
 };
@@ -150,9 +78,9 @@ export const acknowledgeSOS = async (req, res) => {
 
 export const resolveSOS = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { resolutionNote } = req.body;
 
-    const sos = await SOSRequest.findById(id);
+    const sos = await SOSRequest.findById(req.params.id);
 
     if (!sos) {
       return res.status(404).json({
@@ -161,110 +89,89 @@ export const resolveSOS = async (req, res) => {
       });
     }
 
-    if (sos.status === "resolved") {
-      return res.status(400).json({
-        success: false,
-        message: "This SOS request has already been resolved.",
-      });
-    }
-
-    // Only acknowledged SOS can be resolved
-    if (sos.status !== "acknowledged") {
-      return res.status(400).json({
-        success: false,
-        message: "SOS request must be acknowledged before it can be resolved.",
-      });
-    }
-
     sos.status = "resolved";
     sos.resolvedAt = new Date();
     sos.resolvedBy = req.user._id;
-
+    if (resolutionNote) sos.resolutionNote = resolutionNote;
     await sos.save();
 
-    const updatedSOS = await SOSRequest.findById(sos._id)
-      .populate("student", "name email studentId program phone profileImage")
-      .populate("resolvedBy", "name email role");
+    const populated = await SOSRequest.findById(sos._id)
+      .populate("student", "name email studentId program phone")
+      .populate("resolvedBy", "name email");
+
+    // Real-time push: student dashboard should instantly show "Solved"
+    const io = req.app.get("io");
+    io.to("admins").emit("sos:updated", populated);
+    io.to(`student-${sos.student}`).emit("sos:resolved", populated);
 
     return res.status(200).json({
       success: true,
-      message: "SOS request resolved successfully.",
-      sos: updatedSOS,
+      message: "SOS marked as resolved.",
+      sos: populated,
     });
   } catch (error) {
     console.error("Resolve SOS error:", error);
-
     return res.status(500).json({
       success: false,
-      message: "Server error while resolving SOS request.",
+      message: "Server error while resolving SOS.",
     });
   }
 };
 
 // =========================
-// CREATE ADMIN ACCOUNT
+// GET ALL STUDENTS
 // =========================
 
-export const createAdmin = async (req, res) => {
+export const getAllStudents = async (req, res) => {
   try {
-    const { name, password, phone } = req.body;
+    const students = await User.find({ role: "student" })
+      .select("-password")
+      .sort({ createdAt: -1 });
 
-    const adminEmail = "admin@uiu.ac.bd";
-
-    if (!name || !password) {
-      return res.status(400).json({
-        success: false,
-        message: "Name and password are required.",
-      });
-    }
-
-    if (password.length < 6) {
-      return res.status(400).json({
-        success: false,
-        message: "Password must be at least 6 characters long.",
-      });
-    }
-
-    const existingAdmin = await User.findOne({
-      email: adminEmail,
-    });
-
-    if (existingAdmin) {
-      return res.status(409).json({
-        success: false,
-        message: "Admin account already exists.",
-      });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 12);
-
-    const admin = await User.create({
-      name: name.trim(),
-      email: adminEmail,
-      password: hashedPassword,
-      role: "admin",
-      program: "Administration",
-      phone: phone?.trim() || "",
-      isVerified: true,
-      isActive: true,
-    });
-
-    return res.status(201).json({
+    return res.status(200).json({
       success: true,
-      message: "Admin account created successfully.",
-      admin: {
-        id: admin._id,
-        name: admin.name,
-        email: admin.email,
-        role: admin.role,
+      count: students.length,
+      students,
+    });
+  } catch (error) {
+    console.error("Get all students error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error while loading students.",
+    });
+  }
+};
+
+// =========================
+// DASHBOARD STATS
+// =========================
+
+export const getAdminStats = async (req, res) => {
+  try {
+    const [totalStudents, pending, acknowledged, resolved] = await Promise.all([
+      User.countDocuments({ role: "student" }),
+      SOSRequest.countDocuments({ status: "pending" }),
+      SOSRequest.countDocuments({ status: "acknowledged" }),
+      SOSRequest.countDocuments({ status: "resolved" }),
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      stats: {
+        totalStudents,
+        sos: {
+          pending,
+          acknowledged,
+          resolved,
+          total: pending + acknowledged + resolved,
+        },
       },
     });
   } catch (error) {
-    console.error("Create admin error:", error);
-
+    console.error("Get admin stats error:", error);
     return res.status(500).json({
       success: false,
-      message: "Server error while creating admin account.",
+      message: "Server error while loading stats.",
     });
   }
 };

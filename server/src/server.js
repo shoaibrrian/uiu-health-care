@@ -1,4 +1,6 @@
 import express from "express";
+import { createServer } from "http";
+import { Server } from "socket.io";
 import cors from "cors";
 import dotenv from "dotenv";
 import connectDB from "./config/db.js";
@@ -9,16 +11,48 @@ import adminRoutes from "./routes/adminRoutes.js";
 dotenv.config();
 
 const app = express();
+const httpServer = createServer(app);
 
 const PORT = process.env.PORT || 5000;
+const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
 
 // Connect to MongoDB
 await connectDB();
 
+// Socket.io setup
+const io = new Server(httpServer, {
+  cors: {
+    origin: CLIENT_URL,
+    credentials: true,
+  },
+});
+
+io.on("connection", (socket) => {
+  console.log(`Socket connected: ${socket.id}`);
+
+  // Admin joins a room to receive all SOS broadcasts
+  socket.on("join-admin-room", () => {
+    socket.join("admins");
+    console.log(`Socket ${socket.id} joined admin room`);
+  });
+
+  // Student joins a personal room to receive status updates
+  socket.on("join-student-room", (studentId) => {
+    socket.join(`student-${studentId}`);
+  });
+
+  socket.on("disconnect", () => {
+    console.log(`Socket disconnected: ${socket.id}`);
+  });
+});
+
+// Make io accessible in controllers via req.app.get("io")
+app.set("io", io);
+
 // Middleware
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    origin: CLIENT_URL,
     credentials: true,
   }),
 );
@@ -50,14 +84,13 @@ app.use((req, res) => {
 // Global error handler
 app.use((error, req, res, next) => {
   console.error("Server error:", error);
-
   res.status(500).json({
     success: false,
     message: "Internal server error.",
   });
 });
 
-// Start server
-app.listen(PORT, () => {
+// Start server (httpServer, not app, so Socket.io works)
+httpServer.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });

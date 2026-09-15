@@ -110,6 +110,10 @@ export const createSOS = async (req, res) => {
       "name email studentId program phone",
     );
 
+    // Real-time push to every connected admin dashboard
+    const io = req.app.get("io");
+    io.to("admins").emit("sos:new", populatedSOS);
+
     return res.status(201).json({
       success: true,
       message:
