@@ -156,10 +156,12 @@ export const register = async (req, res) => {
       isActive: true,
     });
 
+    const token = generateToken(user);
+
     return res.status(201).json({
       success: true,
-      message:
-        "Student account created successfully. Please verify your email.",
+      message: "Student account created successfully.",
+      token,
       user: {
         id: user._id,
         name: user.name,
@@ -167,6 +169,10 @@ export const register = async (req, res) => {
         role: user.role,
         studentId: user.studentId,
         program: user.program,
+        phone: user.phone || null,
+        profileImage: user.profileImage || null,
+        isVerified: user.isVerified,
+        isActive: user.isActive,
       },
     });
   } catch (error) {
