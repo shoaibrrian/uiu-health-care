@@ -8,7 +8,10 @@ import {
   LogOut,
   HeartPulse,
   Phone,
-  MapPin,
+  ShieldCheck,
+  LayoutDashboard,
+  UserRound,
+  Bell,
 } from "lucide-react";
 import { connectSocket } from "../../lib/socket";
 
@@ -39,6 +42,8 @@ export default function AdminDashboard() {
   const [note, setNote] = useState<Record<string, string>>({});
 
   const token = localStorage.getItem("token");
+  const userRaw = localStorage.getItem("user");
+  const admin = userRaw ? JSON.parse(userRaw) : null;
 
   const loadData = async () => {
     try {
@@ -50,10 +55,8 @@ export default function AdminDashboard() {
           headers: { Authorization: `Bearer ${token}` },
         }),
       ]);
-
       const sosData = await sosRes.json();
       const statsData = await statsRes.json();
-
       if (sosData.success) setSosList(sosData.requests);
       if (statsData.success) setStats(statsData.stats);
     } catch (err) {
@@ -65,7 +68,6 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     loadData();
-
     const socket = connectSocket();
     socket.emit("join-admin-room");
 
@@ -77,7 +79,6 @@ export default function AdminDashboard() {
           : prev,
       );
     });
-
     socket.on("sos:updated", (updated: SosItem) => {
       setSosList((prev) =>
         prev.map((s) => (s._id === updated._id ? updated : s)),
@@ -119,8 +120,8 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#080C0B] text-white">
-        Loading...
+      <div className="flex min-h-screen items-center justify-center bg-[#080C0B]">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#34E7A6] border-t-transparent" />
       </div>
     );
   }
@@ -129,176 +130,255 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-[#080C0B] font-sans text-[#F4F6F5]">
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
         <div className="absolute -top-40 left-1/3 h-[500px] w-[500px] rounded-full bg-[#34E7A6]/[0.05] blur-[120px]" />
+        <div className="absolute bottom-0 right-0 h-[400px] w-[400px] rounded-full bg-[#E5484D]/[0.04] blur-[120px]" />
       </div>
 
-      <header className="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-white/[0.07] bg-[#080C0B]/80 px-8 backdrop-blur-xl">
-        <div className="flex items-center gap-2.5">
+      {/* Sidebar */}
+      <aside className="fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-white/[0.07] bg-[#0A0F0D]">
+        <div className="flex h-20 items-center gap-2.5 border-b border-white/[0.07] px-6">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#34E7A6]/10 text-[#34E7A6] ring-1 ring-[#34E7A6]/20">
             <HeartPulse size={17} />
           </div>
           <div>
             <p className="text-sm font-semibold">UIU Health Care</p>
             <p className="text-[10px] uppercase tracking-widest text-white/30">
-              Admin Dashboard
+              Admin Portal
             </p>
           </div>
         </div>
-        <button
-          onClick={logout}
-          className="flex items-center gap-2 rounded-xl border border-white/[0.08] px-4 py-2 text-sm text-white/50 hover:border-[#E5484D]/30 hover:text-[#E5484D]"
-        >
-          <LogOut size={15} /> Log out
-        </button>
-      </header>
 
-      <main className="relative mx-auto max-w-6xl px-6 py-8">
-        {/* Stats */}
-        <div className="mb-10 grid grid-cols-2 gap-4 lg:grid-cols-4">
-          {[
-            {
-              label: "Total Students",
-              value: stats?.totalStudents ?? 0,
-              icon: Users,
-              color: "text-[#34E7A6] bg-[#34E7A6]/10",
-            },
-            {
-              label: "Pending SOS",
-              value: stats?.sos.pending ?? 0,
-              icon: Siren,
-              color: "text-[#E5484D] bg-[#E5484D]/10",
-            },
-            {
-              label: "In Progress",
-              value: stats?.sos.acknowledged ?? 0,
-              icon: Clock3,
-              color: "text-[#F0B429] bg-[#F0B429]/10",
-            },
-            {
-              label: "Resolved",
-              value: stats?.sos.resolved ?? 0,
-              icon: CheckCircle2,
-              color: "text-[#34E7A6] bg-[#34E7A6]/10",
-            },
-          ].map((c) => (
-            <div
-              key={c.label}
-              className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5"
-            >
-              <div
-                className={`inline-flex h-9 w-9 items-center justify-center rounded-lg ${c.color}`}
-              >
-                <c.icon size={17} />
-              </div>
-              <p className="mt-4 text-2xl font-bold">{c.value}</p>
-              <p className="mt-1 text-xs text-white/40">{c.label}</p>
+        <nav className="flex-1 px-4 py-6">
+          <p className="mb-3 px-3 text-[10px] font-semibold uppercase tracking-widest text-white/25">
+            Overview
+          </p>
+          <button className="flex w-full items-center gap-3 rounded-xl bg-[#34E7A6]/10 px-3 py-3 text-sm font-medium text-[#34E7A6]">
+            <LayoutDashboard size={18} />
+            Dashboard
+          </button>
+          <button className="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm text-white/45 transition hover:bg-white/[0.04] hover:text-white">
+            <Users size={18} />
+            Students
+          </button>
+          <button className="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm text-white/45 transition hover:bg-white/[0.04] hover:text-white">
+            <Siren size={18} />
+            SOS History
+          </button>
+        </nav>
+
+        <div className="border-t border-white/[0.07] p-4">
+          <div className="mb-3 flex items-center gap-3 rounded-xl bg-white/[0.03] p-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#34E7A6]/10 text-[#34E7A6]">
+              <ShieldCheck size={17} />
             </div>
-          ))}
+            <div className="min-w-0">
+              <p className="truncate text-sm font-medium">
+                {admin?.name || "Admin"}
+              </p>
+              <p className="truncate text-[11px] text-white/30">
+                {admin?.email}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={logout}
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-white/40 transition hover:bg-white/[0.04] hover:text-white"
+          >
+            <LogOut size={17} />
+            Sign out
+          </button>
         </div>
+      </aside>
 
-        {/* Active SOS */}
-        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-white/40">
-          Active SOS Alerts ({active.length})
-        </h2>
-        <div className="space-y-3">
-          <AnimatePresence initial={false}>
-            {active.map((s) => (
+      {/* Main content */}
+      <div className="relative pl-64">
+        <header className="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-white/[0.07] bg-[#080C0B]/80 px-8 backdrop-blur-xl">
+          <div>
+            <p className="text-xs text-white/30">Admin Portal</p>
+            <h1 className="text-sm font-semibold">Emergency Response Center</h1>
+          </div>
+          <div className="flex items-center gap-2 text-xs text-white/30">
+            <span className="h-2 w-2 rounded-full bg-[#34E7A6]" />
+            Live · Real-time monitoring
+          </div>
+        </header>
+
+        <main className="mx-auto max-w-6xl px-8 py-8">
+          {/* Stats */}
+          <div className="mb-10 grid grid-cols-2 gap-4 lg:grid-cols-4">
+            {[
+              {
+                label: "Total Students",
+                value: stats?.totalStudents ?? 0,
+                icon: Users,
+                color: "text-[#34E7A6] bg-[#34E7A6]/10",
+              },
+              {
+                label: "Pending SOS",
+                value: stats?.sos.pending ?? 0,
+                icon: Siren,
+                color: "text-[#E5484D] bg-[#E5484D]/10",
+              },
+              {
+                label: "In Progress",
+                value: stats?.sos.acknowledged ?? 0,
+                icon: Clock3,
+                color: "text-[#F0B429] bg-[#F0B429]/10",
+              },
+              {
+                label: "Resolved",
+                value: stats?.sos.resolved ?? 0,
+                icon: CheckCircle2,
+                color: "text-[#34E7A6] bg-[#34E7A6]/10",
+              },
+            ].map((c, i) => (
               <motion.div
-                key={s._id}
-                layout
-                initial={{ opacity: 0, x: -12 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0 }}
+                key={c.label}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.06 }}
                 className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5"
               >
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="font-semibold">{s.student?.name}</p>
-                    <p className="text-xs text-white/40">
-                      {s.student?.studentId} · {s.student?.program}
-                    </p>
-                    {s.student?.phone && (
-                      <p className="mt-1 flex items-center gap-1.5 text-xs text-white/50">
-                        <Phone size={12} /> {s.student.phone}
-                      </p>
-                    )}
-                    <p className="mt-2 text-xs uppercase tracking-wide text-[#E5484D]">
-                      {s.emergencyType}
-                    </p>
-                    {s.message && (
-                      <p className="mt-1 text-sm text-white/60">{s.message}</p>
-                    )}
-                    <p className="mt-2 text-[11px] text-white/25">
-                      {new Date(s.createdAt).toLocaleString()}
-                    </p>
-                  </div>
-                  <span
-                    className={`rounded-full px-3 py-1 text-xs font-semibold capitalize ${
-                      s.status === "pending"
-                        ? "bg-[#E5484D]/10 text-[#FF7777]"
-                        : "bg-[#F0B429]/10 text-[#F0B429]"
-                    }`}
-                  >
-                    {s.status}
-                  </span>
+                <div
+                  className={`inline-flex h-10 w-10 items-center justify-center rounded-xl ${c.color}`}
+                >
+                  <c.icon size={18} />
                 </div>
-
-                <div className="mt-4 flex flex-wrap items-center gap-2">
-                  {s.status === "pending" && (
-                    <button
-                      onClick={() => acknowledge(s._id)}
-                      className="rounded-lg border border-white/[0.08] px-3 py-1.5 text-xs font-medium hover:border-[#F0B429]/40 hover:text-[#F0B429]"
-                    >
-                      Acknowledge
-                    </button>
-                  )}
-                  <input
-                    placeholder="Resolution note (optional)"
-                    value={note[s._id] || ""}
-                    onChange={(e) =>
-                      setNote((prev) => ({ ...prev, [s._id]: e.target.value }))
-                    }
-                    className="min-w-[180px] flex-1 rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 py-1.5 text-xs outline-none focus:border-[#34E7A6]/40"
-                  />
-                  <button
-                    onClick={() => resolve(s._id)}
-                    className="flex items-center gap-1.5 rounded-lg bg-[#34E7A6] px-3 py-1.5 text-xs font-bold text-[#080C0B] hover:bg-[#5CFFC0]"
-                  >
-                    <CheckCircle2 size={13} /> Mark Solved
-                  </button>
-                </div>
+                <p className="mt-4 font-['Manrope'] text-3xl font-extrabold">
+                  {c.value}
+                </p>
+                <p className="mt-1 text-xs text-white/40">{c.label}</p>
               </motion.div>
             ))}
-            {active.length === 0 && (
-              <p className="text-sm text-white/40">
-                No active SOS requests right now.
-              </p>
-            )}
-          </AnimatePresence>
-        </div>
+          </div>
 
-        {/* Resolved */}
-        <h2 className="mb-4 mt-10 text-sm font-semibold uppercase tracking-wide text-white/40">
-          Resolved ({resolved.length})
-        </h2>
-        <div className="space-y-2">
-          {resolved.map((s) => (
-            <div
-              key={s._id}
-              className="flex items-center justify-between rounded-xl border border-white/[0.05] bg-white/[0.01] px-5 py-3 opacity-60"
-            >
-              <div>
-                <p className="text-sm font-medium">{s.student?.name}</p>
-                <p className="text-xs text-white/30">
-                  {new Date(s.createdAt).toLocaleString()}
-                </p>
+          {/* Active SOS */}
+          <div className="mb-4 flex items-center gap-2">
+            <Bell size={15} className="text-[#E5484D]" />
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-white/50">
+              Active SOS Alerts ({active.length})
+            </h2>
+          </div>
+
+          <div className="space-y-3">
+            <AnimatePresence initial={false}>
+              {active.map((s) => (
+                <motion.div
+                  key={s._id}
+                  layout
+                  initial={{ opacity: 0, x: -12 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0 }}
+                  className="rounded-2xl border border-[#E5484D]/15 bg-gradient-to-br from-[#E5484D]/[0.05] to-white/[0.02] p-5"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#34E7A6]/10 text-[#34E7A6]">
+                        <UserRound size={17} />
+                      </div>
+                      <div>
+                        <p className="font-semibold">{s.student?.name}</p>
+                        <p className="text-xs text-white/40">
+                          {s.student?.studentId} · {s.student?.program}
+                        </p>
+                        {s.student?.phone && (
+                          <p className="mt-1 flex items-center gap-1.5 text-xs text-white/50">
+                            <Phone size={12} /> {s.student.phone}
+                          </p>
+                        )}
+                        <p className="mt-2 inline-block rounded-full bg-white/[0.05] px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#FF7777]">
+                          {s.emergencyType}
+                        </p>
+                        {s.message && (
+                          <p className="mt-2 text-sm text-white/60">
+                            {s.message}
+                          </p>
+                        )}
+                        <p className="mt-2 text-[11px] text-white/25">
+                          {new Date(s.createdAt).toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-semibold capitalize ${
+                        s.status === "pending"
+                          ? "bg-[#E5484D]/10 text-[#FF7777]"
+                          : "bg-[#F0B429]/10 text-[#F0B429]"
+                      }`}
+                    >
+                      {s.status}
+                    </span>
+                  </div>
+
+                  <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-white/[0.06] pt-4">
+                    {s.status === "pending" && (
+                      <button
+                        onClick={() => acknowledge(s._id)}
+                        className="rounded-lg border border-white/[0.08] px-3 py-1.5 text-xs font-medium hover:border-[#F0B429]/40 hover:text-[#F0B429]"
+                      >
+                        Acknowledge
+                      </button>
+                    )}
+                    <input
+                      placeholder="Resolution note (optional)"
+                      value={note[s._id] || ""}
+                      onChange={(e) =>
+                        setNote((prev) => ({
+                          ...prev,
+                          [s._id]: e.target.value,
+                        }))
+                      }
+                      className="min-w-[180px] flex-1 rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 py-1.5 text-xs outline-none focus:border-[#34E7A6]/40"
+                    />
+                    <button
+                      onClick={() => resolve(s._id)}
+                      className="flex items-center gap-1.5 rounded-lg bg-[#34E7A6] px-3 py-1.5 text-xs font-bold text-[#080C0B] hover:bg-[#5CFFC0]"
+                    >
+                      <CheckCircle2 size={13} /> Mark Solved
+                    </button>
+                  </div>
+                </motion.div>
+              ))}
+              {active.length === 0 && (
+                <div className="rounded-2xl border border-white/[0.06] bg-white/[0.015] p-8 text-center">
+                  <CheckCircle2
+                    size={24}
+                    className="mx-auto mb-2 text-[#34E7A6]"
+                  />
+                  <p className="text-sm text-white/40">
+                    No active SOS requests right now.
+                  </p>
+                </div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Resolved */}
+          <div className="mb-4 mt-10 flex items-center gap-2">
+            <CheckCircle2 size={15} className="text-[#34E7A6]" />
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-white/50">
+              Resolved ({resolved.length})
+            </h2>
+          </div>
+          <div className="space-y-2">
+            {resolved.map((s) => (
+              <div
+                key={s._id}
+                className="flex items-center justify-between rounded-xl border border-white/[0.05] bg-white/[0.01] px-5 py-3.5 opacity-60"
+              >
+                <div>
+                  <p className="text-sm font-medium">{s.student?.name}</p>
+                  <p className="text-xs text-white/30">
+                    {new Date(s.createdAt).toLocaleString()}
+                  </p>
+                </div>
+                <span className="rounded-full bg-[#34E7A6]/10 px-3 py-1 text-xs font-semibold text-[#34E7A6]">
+                  Solved
+                </span>
               </div>
-              <span className="rounded-full bg-[#34E7A6]/10 px-3 py-1 text-xs font-semibold text-[#34E7A6]">
-                Solved
-              </span>
-            </div>
-          ))}
-        </div>
-      </main>
+            ))}
+          </div>
+        </main>
+      </div>
     </div>
   );
 }
