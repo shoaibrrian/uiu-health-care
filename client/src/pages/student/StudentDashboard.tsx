@@ -21,6 +21,7 @@ import {
   X,
   Loader2,
 } from "lucide-react";
+import { connectSocket } from "../../lib/socket";
 
 const quickActions = [
   {
@@ -40,21 +41,6 @@ const quickActions = [
   },
 ];
 
-const recentAlerts = [
-  {
-    id: "SOS-2026-014",
-    type: "Emergency SOS",
-    date: "Today, 10:42 AM",
-    status: "Resolved",
-  },
-  {
-    id: "SOS-2026-009",
-    type: "Medical Assistance",
-    date: "Aug 24, 3:18 PM",
-    status: "Resolved",
-  },
-];
-
 export default function StudentDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showSOSModal, setShowSOSModal] = useState(false);
@@ -63,6 +49,7 @@ export default function StudentDashboard() {
   const [sosStatus, setSOSStatus] = useState<
     "idle" | "sending" | "active" | "resolved"
   >("idle");
+  const [recentAlerts, setRecentAlerts] = useState<any[]>([]);
 
   const [emergencyType, setEmergencyType] = useState("medical");
   const [message, setMessage] = useState("");
@@ -144,7 +131,6 @@ export default function StudentDashboard() {
     const loadDashboard = async () => {
       try {
         const token = localStorage.getItem("token");
-
         if (!token) {
           window.location.href = "/login";
           return;
@@ -152,13 +138,8 @@ export default function StudentDashboard() {
 
         const response = await fetch(
           "http://localhost:5000/api/students/dashboard",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          },
+          { headers: { Authorization: `Bearer ${token}` } },
         );
-
         const data = await response.json();
 
         if (!response.ok) {
@@ -166,6 +147,7 @@ export default function StudentDashboard() {
         }
 
         setStudent(data.student);
+        setRecentAlerts(data.sos.recent || []);
 
         if (data.sos.active) {
           setSOSStatus("active");
@@ -178,11 +160,32 @@ export default function StudentDashboard() {
     };
 
     loadDashboard();
-  }, []);
 
-  const resolveSOS = () => {
-    setSOSStatus("resolved");
-  };
+    // Real-time: listen for admin actions on this student's SOS
+    const socket = connectSocket();
+    const studentUser = localStorage.getItem("user");
+    const studentId = studentUser ? JSON.parse(studentUser).id : null;
+
+    if (studentId) {
+      socket.emit("join-student-room", studentId);
+    }
+
+    socket.on("sos:resolved", () => {
+      setSOSStatus("resolved");
+      loadDashboard(); // refresh history list too
+    });
+
+    socket.on("sos:updated", (updated: any) => {
+      if (updated.status === "acknowledged") {
+        // stays "active" UI-wise, no change needed
+      }
+    });
+
+    return () => {
+      socket.off("sos:resolved");
+      socket.off("sos:updated");
+    };
+  }, []);
 
   const resetSOS = () => {
     setSOSStatus("idle");
@@ -470,13 +473,6 @@ export default function StudentDashboard() {
                     <ShieldCheck size={15} className="text-[#34E7A6]" />
                     Campus response team has been notified
                   </div>
-
-                  <button
-                    onClick={resolveSOS}
-                    className="rounded-xl border border-white/[0.08] px-4 py-2.5 text-xs font-medium text-white/40 transition hover:border-[#34E7A6]/20 hover:text-[#34E7A6]"
-                  >
-                    Simulate resolution
-                  </button>
                 </div>
               </div>
             )}
@@ -577,24 +573,34 @@ export default function StudentDashboard() {
               </div>
 
               <div className="divide-y divide-white/[0.06]">
+                {recentAlerts.length === 0 && (
+                  <p className="px-5 py-6 text-center text-sm text-white/30">
+                    No emergency alerts yet.
+                  </p>
+                )}
                 {recentAlerts.map((alert) => (
                   <div
-                    key={alert.id}
+                    key={alert._id}
                     className="flex items-center gap-4 px-5 py-4"
                   >
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#34E7A6]/[0.07] text-[#34E7A6]">
                       <ShieldCheck size={18} />
                     </div>
-
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium">{alert.type}</p>
-
+                      <p className="text-sm font-medium capitalize">
+                        {alert.emergencyType}
+                      </p>
                       <p className="mt-1 text-xs text-white/30">
-                        {alert.id} · {alert.date}
+                        {new Date(alert.createdAt).toLocaleString()}
                       </p>
                     </div>
-
-                    <span className="rounded-full bg-[#34E7A6]/10 px-2.5 py-1 text-[10px] font-semibold text-[#34E7A6]">
+                    <span
+                      className={`rounded-full px-2.5 py-1 text-[10px] font-semibold capitalize ${
+                        alert.status === "resolved"
+                          ? "bg-[#34E7A6]/10 text-[#34E7A6]"
+                          : "bg-[#F0B429]/10 text-[#F0B429]"
+                      }`}
+                    >
                       {alert.status}
                     </span>
                   </div>
