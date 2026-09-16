@@ -6,6 +6,7 @@ import StudentDashboard from "../pages/student/StudentDashboard";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import FirstAid from "../pages/student/FirstAid";
 import MentalHealth from "../pages/student/MentalHealth";
+import HospitalFinder from "../pages/student/HospitalFinder";
 
 export default function AppRoutes() {
   return (
@@ -23,6 +24,8 @@ export default function AppRoutes() {
         <Route path="/student/first-aid" element={<FirstAid />} />
 
         <Route path="/student/mental-health" element={<MentalHealth />} />
+
+        <Route path="/student/hospitals" element={<HospitalFinder />} />
       </Routes>
     </BrowserRouter>
   );
