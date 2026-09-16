@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { connectSocket } from "../../lib/socket";
 import { useNavigate } from "react-router-dom";
+import StudentLayout from "../../layouts/StudentLayout";
 
 const quickActions = [
   {
