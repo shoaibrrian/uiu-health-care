@@ -12,6 +12,8 @@ import {
   LayoutDashboard,
   UserRound,
   Bell,
+  Menu,
+  X,
 } from "lucide-react";
 import { connectSocket } from "../../lib/socket";
 
@@ -36,6 +38,7 @@ interface Stats {
 }
 
 export default function AdminDashboard() {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sosList, setSosList] = useState<SosItem[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -44,6 +47,8 @@ export default function AdminDashboard() {
   const token = localStorage.getItem("token");
   const userRaw = localStorage.getItem("user");
   const admin = userRaw ? JSON.parse(userRaw) : null;
+
+  const closeSidebar = () => setSidebarOpen(false);
 
   const loadData = async () => {
     try {
@@ -133,18 +138,38 @@ export default function AdminDashboard() {
         <div className="absolute bottom-0 right-0 h-[400px] w-[400px] rounded-full bg-[#E5484D]/[0.04] blur-[120px]" />
       </div>
 
+      {/* Mobile overlay */}
+      {sidebarOpen && (
+        <div
+          onClick={closeSidebar}
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden"
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-white/[0.07] bg-[#0A0F0D]">
-        <div className="flex h-20 items-center gap-2.5 border-b border-white/[0.07] px-6">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#34E7A6]/10 text-[#34E7A6] ring-1 ring-[#34E7A6]/20">
-            <HeartPulse size={17} />
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-white/[0.07] bg-[#0A0F0D] transition-transform duration-300 lg:translate-x-0 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="flex h-20 items-center justify-between border-b border-white/[0.07] px-6">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#34E7A6]/10 text-[#34E7A6] ring-1 ring-[#34E7A6]/20">
+              <HeartPulse size={17} />
+            </div>
+            <div>
+              <p className="text-sm font-semibold">UIU Health Care</p>
+              <p className="text-[10px] uppercase tracking-widest text-white/30">
+                Admin Portal
+              </p>
+            </div>
           </div>
-          <div>
-            <p className="text-sm font-semibold">UIU Health Care</p>
-            <p className="text-[10px] uppercase tracking-widest text-white/30">
-              Admin Portal
-            </p>
-          </div>
+          <button
+            onClick={closeSidebar}
+            className="text-white/40 hover:text-white lg:hidden"
+          >
+            <X size={20} />
+          </button>
         </div>
 
         <nav className="flex-1 px-4 py-6">
@@ -190,19 +215,29 @@ export default function AdminDashboard() {
       </aside>
 
       {/* Main content */}
-      <div className="relative pl-64">
-        <header className="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-white/[0.07] bg-[#080C0B]/80 px-8 backdrop-blur-xl">
-          <div>
+      <div className="relative lg:pl-64">
+        <header className="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-white/[0.07] bg-[#080C0B]/80 px-5 backdrop-blur-xl sm:px-8">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="rounded-lg p-2 text-white/50 hover:bg-white/[0.05] hover:text-white lg:hidden"
+          >
+            <Menu size={21} />
+          </button>
+
+          <div className="hidden lg:block">
             <p className="text-xs text-white/30">Admin Portal</p>
             <h1 className="text-sm font-semibold">Emergency Response Center</h1>
           </div>
-          <div className="flex items-center gap-2 text-xs text-white/30">
+
+          <div className="ml-auto flex items-center gap-2 text-xs text-white/30">
             <span className="h-2 w-2 rounded-full bg-[#34E7A6]" />
-            Live · Real-time monitoring
+            <span className="hidden sm:inline">
+              Live · Real-time monitoring
+            </span>
           </div>
         </header>
 
-        <main className="mx-auto max-w-6xl px-8 py-8">
+        <main className="mx-auto max-w-6xl px-5 py-8 sm:px-8">
           {/* Stats */}
           <div className="mb-10 grid grid-cols-2 gap-4 lg:grid-cols-4">
             {[
