@@ -4,6 +4,7 @@ import LoginPage from "../pages/LoginPage";
 import RegisterPage from "../pages/RegisterPage";
 import StudentDashboard from "../pages/student/StudentDashboard";
 import AdminDashboard from "../pages/admin/AdminDashboard";
+import FirstAid from "../pages/student/FirstAid";
 
 export default function AppRoutes() {
   return (
@@ -17,6 +18,8 @@ export default function AppRoutes() {
         <Route path="/student" element={<StudentDashboard />} />
 
         <Route path="/admin" element={<AdminDashboard />} />
+
+        <Route path="/student/first-aid" element={<FirstAid />} />
       </Routes>
     </BrowserRouter>
   );

@@ -22,26 +22,31 @@ import {
   Loader2,
 } from "lucide-react";
 import { connectSocket } from "../../lib/socket";
+import { useNavigate } from "react-router-dom";
 
 const quickActions = [
   {
     title: "First Aid",
     description: "Immediate guidance",
     icon: BookOpenText,
+    path: "/student/first-aid",
   },
   {
     title: "Mental Health",
     description: "Support & resources",
     icon: MessageCircleHeart,
+    path: "/student/mental-health",
   },
   {
     title: "Find Hospital",
     description: "Nearby healthcare",
     icon: Hospital,
+    path: "/student/hospitals",
   },
 ];
 
 export default function StudentDashboard() {
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showSOSModal, setShowSOSModal] = useState(false);
   const [student, setStudent] = useState<any>(null);
@@ -527,6 +532,7 @@ export default function StudentDashboard() {
               {quickActions.map((action, index) => (
                 <motion.button
                   key={action.title}
+                  onClick={() => navigate(action.path)}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.12 + index * 0.06 }}
