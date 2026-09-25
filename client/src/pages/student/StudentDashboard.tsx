@@ -254,19 +254,20 @@ export default function StudentDashboard() {
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                <div className="rounded-2xl border border-white/[0.07] bg-black/10 p-4">
+                <div className="min-w-0 rounded-2xl border border-white/[0.07] bg-black/10 p-4">
                   <p className="text-[10px] uppercase tracking-wider text-white/25">
                     Status
                   </p>
-                  <p className="mt-2 text-sm font-semibold text-[#F0B429]">
+                  <p className="mt-2 truncate text-sm font-semibold text-[#F0B429]">
                     Responding
                   </p>
                 </div>
-                <div className="col-span-2 rounded-2xl border border-white/[0.07] bg-black/10 p-4 sm:col-span-1">
+
+                <div className="col-span-2 min-w-0 rounded-2xl border border-white/[0.07] bg-black/10 p-4 sm:col-span-1">
                   <p className="text-[10px] uppercase tracking-wider text-white/25">
                     Location
                   </p>
-                  <p className="mt-2 flex items-center gap-1.5 text-sm font-semibold">
+                  <p className="mt-2 flex items-center gap-1.5 truncate text-sm font-semibold">
                     <MapPin size={13} className="text-[#34E7A6]" />
                     Shared
                   </p>
