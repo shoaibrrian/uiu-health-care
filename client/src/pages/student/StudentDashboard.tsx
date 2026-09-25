@@ -4,6 +4,7 @@ import {
   AlertTriangle,
   CheckCircle2,
   ChevronRight,
+  ChevronDown,
   Hospital,
   MapPin,
   MessageCircleHeart,
@@ -39,6 +40,14 @@ const quickActions = [
   },
 ];
 
+const emergencyTypeOptions = [
+  { value: "medical", label: "Medical emergency" },
+  { value: "accident", label: "Accident" },
+  { value: "injury", label: "Injury" },
+  { value: "mental-health", label: "Mental health crisis" },
+  { value: "other", label: "Other" },
+];
+
 export default function StudentDashboard() {
   const navigate = useNavigate();
   const [showSOSModal, setShowSOSModal] = useState(false);
@@ -49,6 +58,7 @@ export default function StudentDashboard() {
   >("idle");
   const [recentAlerts, setRecentAlerts] = useState<any[]>([]);
   const [emergencyType, setEmergencyType] = useState("medical");
+  const [typeDropdownOpen, setTypeDropdownOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [locationEnabled, setLocationEnabled] = useState(false);
 
@@ -486,31 +496,55 @@ export default function StudentDashboard() {
                   </p>
                 </div>
 
-                <div>
+                <div className="relative">
                   <label className="mb-2 block text-xs font-medium text-white/50">
                     Emergency type
                   </label>
-                  <select
-                    value={emergencyType}
-                    onChange={(e) => setEmergencyType(e.target.value)}
-                    className="w-full rounded-xl border border-white/[0.08] bg-white/[0.03] px-4 py-3 text-sm text-white outline-none transition focus:border-[#34E7A6]/40"
+                  <button
+                    type="button"
+                    onClick={() => setTypeDropdownOpen((prev) => !prev)}
+                    className="flex w-full items-center justify-between rounded-xl border border-white/[0.08] bg-white/[0.03] px-4 py-3 text-sm text-white outline-none transition focus:border-[#34E7A6]/40"
                   >
-                    <option value="medical" className="bg-[#0C1210]">
-                      Medical emergency
-                    </option>
-                    <option value="accident" className="bg-[#0C1210]">
-                      Accident
-                    </option>
-                    <option value="injury" className="bg-[#0C1210]">
-                      Injury
-                    </option>
-                    <option value="mental-health" className="bg-[#0C1210]">
-                      Mental health crisis
-                    </option>
-                    <option value="other" className="bg-[#0C1210]">
-                      Other
-                    </option>
-                  </select>
+                    {
+                      emergencyTypeOptions.find(
+                        (o) => o.value === emergencyType,
+                      )?.label
+                    }
+                    <ChevronDown
+                      size={16}
+                      className={`text-white/40 transition-transform ${typeDropdownOpen ? "rotate-180" : ""}`}
+                    />
+                  </button>
+
+                  <AnimatePresence>
+                    {typeDropdownOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -6 }}
+                        transition={{ duration: 0.12 }}
+                        className="absolute z-10 mt-2 w-full overflow-hidden rounded-xl border border-white/[0.09] bg-[#0C1210] shadow-xl"
+                      >
+                        {emergencyTypeOptions.map((option) => (
+                          <button
+                            key={option.value}
+                            type="button"
+                            onClick={() => {
+                              setEmergencyType(option.value);
+                              setTypeDropdownOpen(false);
+                            }}
+                            className={`flex w-full items-center justify-between px-4 py-2.5 text-left text-sm transition ${
+                              emergencyType === option.value
+                                ? "bg-[#34E7A6]/10 text-[#34E7A6]"
+                                : "text-white/70 hover:bg-white/[0.04]"
+                            }`}
+                          >
+                            {option.label}
+                          </button>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
 
                 <div>
