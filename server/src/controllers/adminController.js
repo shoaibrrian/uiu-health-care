@@ -1,5 +1,6 @@
 import User from "../models/User.js";
 import SOSRequest from "../models/SOSRequest.js";
+import Notification from "../models/Notification.js";
 
 // =========================
 // GET ALL SOS REQUESTS
@@ -49,6 +50,15 @@ export const acknowledgeSOS = async (req, res) => {
     sos.acknowledgedAt = new Date();
     await sos.save();
 
+    await Notification.create({
+      student: sos.student,
+      title: "SOS Acknowledged",
+      message:
+        "Your emergency request has been acknowledged by campus response team.",
+      type: "sos",
+      relatedSOS: sos._id,
+    });
+
     const populated = await SOSRequest.findById(sos._id)
       .populate("student", "name email studentId program phone")
       .populate("resolvedBy", "name email");
@@ -94,6 +104,14 @@ export const resolveSOS = async (req, res) => {
     sos.resolvedBy = req.user._id;
     if (resolutionNote) sos.resolutionNote = resolutionNote;
     await sos.save();
+
+    await Notification.create({
+      student: sos.student,
+      title: "Emergency Resolved",
+      message: resolutionNote || "Your emergency request has been resolved.",
+      type: "sos",
+      relatedSOS: sos._id,
+    });
 
     const populated = await SOSRequest.findById(sos._id)
       .populate("student", "name email studentId program phone")

@@ -9,6 +9,7 @@ import studentRoutes from "./routes/studentRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import firstAidRoutes from "./routes/firstAidRoutes.js";
 import mentalHealthRoutes from "./routes/mentalHealthRoutes.js";
+import notificationRoutes from "./routes/notificationRoutes.js";
 
 dotenv.config();
 
@@ -67,6 +68,7 @@ app.use("/api/students", studentRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/first-aid", firstAidRoutes);
 app.use("/api/mental-health", mentalHealthRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 // Health check
 app.get("/api/health", (req, res) => {
