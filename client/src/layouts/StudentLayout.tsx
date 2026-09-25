@@ -1,4 +1,4 @@
-import { useState, ReactNode } from "react";
+import { useState, useEffect, ReactNode } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   Bell,
@@ -24,11 +24,32 @@ export default function StudentLayout({
   pageTitle,
 }: StudentLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+
   const navigate = useNavigate();
   const location = useLocation();
 
   const userRaw = localStorage.getItem("user");
   const user = userRaw ? JSON.parse(userRaw) : null;
+
+  useEffect(() => {
+    const loadCount = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const response = await fetch(
+          "http://localhost:5000/api/notifications",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
+        );
+        const data = await response.json();
+        if (data.success) setUnreadCount(data.unreadCount);
+      } catch (err) {
+        console.error("Failed to load notification count:", err);
+      }
+    };
+    loadCount();
+  }, [location.pathname]);
 
   const closeSidebar = () => setSidebarOpen(false);
 
@@ -138,12 +159,21 @@ export default function StudentLayout({
             </button>
           ))}
 
-          <button className="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm text-white/45 transition hover:bg-white/[0.04] hover:text-white">
+          <button
+            onClick={() => navigate("/student/notifications")}
+            className={`mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition ${
+              location.pathname === "/student/notifications"
+                ? "bg-[#34E7A6]/10 text-[#34E7A6]"
+                : "text-white/45 hover:bg-white/[0.04] hover:text-white"
+            }`}
+          >
             <Bell size={18} />
             Notifications
-            <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-[#E5484D] px-1 text-[10px] font-bold text-white">
-              2
-            </span>
+            {unreadCount > 0 && (
+              <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-[#E5484D] px-1 text-[10px] font-bold text-white">
+                {unreadCount}
+              </span>
+            )}
           </button>
         </nav>
 

@@ -8,6 +8,7 @@ import FirstAid from "../pages/student/FirstAid";
 import MentalHealth from "../pages/student/MentalHealth";
 import HospitalFinder from "../pages/student/HospitalFinder";
 import EmergencyHistory from "../pages/student/EmergencyHistory";
+import Notifications from "../pages/student/Notifications";
 
 export default function AppRoutes() {
   return (
@@ -29,6 +30,8 @@ export default function AppRoutes() {
         <Route path="/student/hospitals" element={<HospitalFinder />} />
 
         <Route path="/student/history" element={<EmergencyHistory />} />
+
+        <Route path="/student/notifications" element={<Notifications />} />
       </Routes>
     </BrowserRouter>
   );
