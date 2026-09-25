@@ -1,5 +1,6 @@
 import { useState, useEffect, ReactNode } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Bell,
   BookOpenText,
@@ -12,6 +13,9 @@ import {
   ShieldCheck,
   UserRound,
   X,
+  Siren,
+  Info,
+  CheckCircle2,
 } from "lucide-react";
 
 interface StudentLayoutProps {
@@ -26,6 +30,9 @@ export default function StudentLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
+  const [notifDropdownOpen, setNotifDropdownOpen] = useState(false);
+  const [recentNotifs, setRecentNotifs] = useState<any[]>([]);
+
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -33,7 +40,7 @@ export default function StudentLayout({
   const user = userRaw ? JSON.parse(userRaw) : null;
 
   useEffect(() => {
-    const loadCount = async () => {
+    const loadNotifications = async () => {
       try {
         const token = localStorage.getItem("token");
         const response = await fetch(
@@ -43,12 +50,15 @@ export default function StudentLayout({
           },
         );
         const data = await response.json();
-        if (data.success) setUnreadCount(data.unreadCount);
+        if (data.success) {
+          setUnreadCount(data.unreadCount);
+          setRecentNotifs(data.notifications.slice(0, 4));
+        }
       } catch (err) {
-        console.error("Failed to load notification count:", err);
+        console.error("Failed to load notifications:", err);
       }
     };
-    loadCount();
+    loadNotifications();
   }, [location.pathname]);
 
   const closeSidebar = () => setSidebarOpen(false);
@@ -216,10 +226,100 @@ export default function StudentLayout({
           </div>
 
           <div className="ml-auto flex items-center gap-3">
-            <button className="relative rounded-xl border border-white/[0.07] p-2.5 text-white/50 transition hover:border-white/15 hover:text-white">
-              <Bell size={18} />
-              <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-[#E5484D]" />
-            </button>
+            <div className="relative">
+              <button
+                onClick={() => setNotifDropdownOpen((prev) => !prev)}
+                className="relative rounded-xl border border-white/[0.07] p-2.5 text-white/50 transition hover:border-white/15 hover:text-white"
+              >
+                <Bell size={18} />
+                {unreadCount > 0 && (
+                  <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-[#E5484D]" />
+                )}
+              </button>
+
+              <AnimatePresence>
+                {notifDropdownOpen && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-40"
+                      onClick={() => setNotifDropdownOpen(false)}
+                    />
+                    <motion.div
+                      initial={{ opacity: 0, y: -8, scale: 0.97 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -8, scale: 0.97 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute right-0 top-12 z-50 w-80 overflow-hidden rounded-2xl border border-white/[0.09] bg-[#0C1210] shadow-2xl"
+                    >
+                      <div className="flex items-center justify-between border-b border-white/[0.07] px-4 py-3">
+                        <p className="text-sm font-semibold">Notifications</p>
+                        {unreadCount > 0 && (
+                          <span className="rounded-full bg-[#34E7A6]/10 px-2 py-0.5 text-[10px] font-semibold text-[#34E7A6]">
+                            {unreadCount} new
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="max-h-80 overflow-y-auto">
+                        {recentNotifs.length === 0 && (
+                          <p className="px-4 py-8 text-center text-xs text-white/35">
+                            No notifications yet.
+                          </p>
+                        )}
+
+                        {recentNotifs.map((n) => {
+                          const Icon =
+                            n.type === "sos"
+                              ? Siren
+                              : n.type === "health-tip"
+                                ? CheckCircle2
+                                : Info;
+                          return (
+                            <div
+                              key={n._id}
+                              className={`flex items-start gap-3 border-b border-white/[0.05] px-4 py-3 last:border-0 ${
+                                !n.read ? "bg-[#34E7A6]/[0.03]" : ""
+                              }`}
+                            >
+                              <div
+                                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
+                                  n.type === "sos"
+                                    ? "bg-[#E5484D]/10 text-[#FF7777]"
+                                    : "bg-[#34E7A6]/10 text-[#34E7A6]"
+                                }`}
+                              >
+                                <Icon size={14} />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <p className="truncate text-xs font-semibold">
+                                  {n.title}
+                                </p>
+                                <p className="mt-0.5 line-clamp-2 text-[11px] text-white/45">
+                                  {n.message}
+                                </p>
+                              </div>
+                              {!n.read && (
+                                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#34E7A6]" />
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      <button
+                        onClick={() => {
+                          setNotifDropdownOpen(false);
+                          navigate("/student/notifications");
+                        }}
+                        className="w-full border-t border-white/[0.07] py-3 text-center text-xs font-semibold text-[#34E7A6] hover:bg-white/[0.02]"
+                      >
+                        See all notifications
+                      </button>
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
+            </div>
             <div className="hidden h-8 w-px bg-white/[0.08] sm:block" />
             <div className="flex items-center gap-2">
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#34E7A6]/10 text-[#34E7A6]">
