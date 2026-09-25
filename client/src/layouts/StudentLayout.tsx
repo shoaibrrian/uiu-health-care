@@ -125,6 +125,14 @@ export default function StudentLayout({
               {item.label}
             </button>
           ))}
+
+          <button className="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm text-white/45 transition hover:bg-white/[0.04] hover:text-white">
+            <Bell size={18} />
+            Notifications
+            <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-[#E5484D] px-1 text-[10px] font-bold text-white">
+              2
+            </span>
+          </button>
         </nav>
 
         <div className="border-t border-white/[0.07] p-4">
