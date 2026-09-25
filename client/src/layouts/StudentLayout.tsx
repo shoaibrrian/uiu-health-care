@@ -40,7 +40,7 @@ export default function StudentLayout({
 
   const navItems = [
     { label: "Dashboard", icon: ShieldCheck, path: "/student" },
-    { label: "Emergency History", icon: Clock3, path: "/student" },
+    // { label: "Emergency History", icon: Clock3, path: "/student" },
     { label: "First Aid", icon: BookOpenText, path: "/student/first-aid" },
     {
       label: "Mental Health",
@@ -93,7 +93,7 @@ export default function StudentLayout({
           <p className="mb-3 px-3 text-[10px] font-semibold uppercase tracking-widest text-white/25">
             Overview
           </p>
-          {navItems.slice(0, 2).map((item) => (
+          {navItems.slice(0, 1).map((item) => (
             <button
               key={item.label}
               onClick={() => navigate(item.path)}
@@ -108,10 +108,16 @@ export default function StudentLayout({
             </button>
           ))}
 
+          <button className="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm text-white/30">
+            <Clock3 size={18} />
+            Emergency History
+            <span className="ml-auto text-[9px] text-white/20">Soon</span>
+          </button>
+
           <p className="mb-3 mt-8 px-3 text-[10px] font-semibold uppercase tracking-widest text-white/25">
             Health & Support
           </p>
-          {navItems.slice(2).map((item) => (
+          {navItems.slice(1).map((item) => (
             <button
               key={item.label}
               onClick={() => navigate(item.path)}
