@@ -40,7 +40,7 @@ export default function StudentLayout({
 
   const navItems = [
     { label: "Dashboard", icon: ShieldCheck, path: "/student" },
-    // { label: "Emergency History", icon: Clock3, path: "/student" },
+
     { label: "First Aid", icon: BookOpenText, path: "/student/first-aid" },
     {
       label: "Mental Health",
@@ -108,10 +108,16 @@ export default function StudentLayout({
             </button>
           ))}
 
-          <button className="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm text-white/30">
+          <button
+            onClick={() => navigate("/student/history")}
+            className={`mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition ${
+              location.pathname === "/student/history"
+                ? "bg-[#34E7A6]/10 text-[#34E7A6]"
+                : "text-white/45 hover:bg-white/[0.04] hover:text-white"
+            }`}
+          >
             <Clock3 size={18} />
             Emergency History
-            <span className="ml-auto text-[9px] text-white/20">Soon</span>
           </button>
 
           <p className="mb-3 mt-8 px-3 text-[10px] font-semibold uppercase tracking-widest text-white/25">
