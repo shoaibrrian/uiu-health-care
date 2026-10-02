@@ -548,17 +548,23 @@ export default function StudentDashboard() {
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-xs font-medium text-white/50">
-                    Additional details{" "}
-                    <span className="text-white/20">(optional)</span>
+                  <label className="mb-2 flex items-center gap-1.5 text-xs font-medium text-white/70">
+                    Exact location & details
+                    <span className="rounded-full bg-[#F0B429]/10 px-1.5 py-0.5 text-[9px] font-semibold text-[#F0B429]">
+                      Important
+                    </span>
                   </label>
                   <textarea
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     rows={3}
-                    placeholder="Briefly describe what happened..."
-                    className="w-full resize-none rounded-xl border border-white/[0.08] bg-white/[0.03] px-4 py-3 text-sm text-white outline-none placeholder:text-white/20 focus:border-[#34E7A6]/40"
+                    placeholder="e.g. 3rd floor, near CSE lab, Room 304, UIU Annex Building..."
+                    className="w-full resize-none rounded-xl border border-white/[0.08] bg-white/[0.03] px-4 py-3 text-sm text-white outline-none placeholder:text-white/25 focus:border-[#34E7A6]/40"
                   />
+                  <p className="mt-1.5 text-[11px] leading-relaxed text-white/30">
+                    GPS shares your general area — building floor, room, or
+                    landmark details help the response team find you faster.
+                  </p>
                 </div>
 
                 <button
