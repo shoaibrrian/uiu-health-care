@@ -8,7 +8,6 @@ import {
   Hospital,
   MapPin,
   MessageCircleHeart,
-  Navigation,
   ShieldCheck,
   Siren,
   X,
@@ -60,14 +59,11 @@ export default function StudentDashboard() {
   const [emergencyType, setEmergencyType] = useState("medical");
   const [typeDropdownOpen, setTypeDropdownOpen] = useState(false);
   const [message, setMessage] = useState("");
-  const [locationEnabled, setLocationEnabled] = useState(false);
 
   const openSOSModal = () => {
     if (sosStatus === "active") return;
     setShowSOSModal(true);
   };
-
-  const enableLocation = () => setLocationEnabled(true);
 
   const sendSOS = async () => {
     setSOSStatus("sending");
@@ -77,21 +73,7 @@ export default function StudentDashboard() {
         window.location.href = "/login";
         return;
       }
-      let latitude = null;
-      let longitude = null;
-      if (locationEnabled && navigator.geolocation) {
-        try {
-          const position = await new Promise<GeolocationPosition>(
-            (resolve, reject) => {
-              navigator.geolocation.getCurrentPosition(resolve, reject);
-            },
-          );
-          latitude = position.coords.latitude;
-          longitude = position.coords.longitude;
-        } catch {
-          console.log("Location permission denied.");
-        }
-      }
+
       const response = await fetch("http://localhost:5000/api/students/sos", {
         method: "POST",
         headers: {
@@ -101,11 +83,9 @@ export default function StudentDashboard() {
         body: JSON.stringify({
           emergencyType,
           message,
-          latitude,
-          longitude,
-          address: "",
         }),
       });
+
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || "Failed to send SOS");
       setSOSStatus("active");
@@ -357,91 +337,49 @@ export default function StudentDashboard() {
         </div>
       </section>
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.4fr_0.8fr]">
-        <section className="rounded-2xl border border-white/[0.07] bg-white/[0.02]">
-          <div className="flex items-center justify-between border-b border-white/[0.07] px-5 py-4">
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-white/25">
-                Activity
-              </p>
-              <h3 className="mt-1 text-sm font-semibold">
-                Recent emergency alerts
-              </h3>
-            </div>
+      <section className="rounded-2xl border border-white/[0.07] bg-white/[0.02]">
+        <div className="flex items-center justify-between border-b border-white/[0.07] px-5 py-4">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-white/25">
+              Activity
+            </p>
+            <h3 className="mt-1 text-sm font-semibold">
+              Recent emergency alerts
+            </h3>
           </div>
-          <div className="divide-y divide-white/[0.06]">
-            {recentAlerts.length === 0 && (
-              <p className="px-5 py-6 text-center text-sm text-white/30">
-                No emergency alerts yet.
-              </p>
-            )}
-            {recentAlerts.map((alert) => (
-              <div
-                key={alert._id}
-                className="flex items-center gap-4 px-5 py-4"
-              >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#34E7A6]/[0.07] text-[#34E7A6]">
-                  <ShieldCheck size={18} />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium capitalize">
-                    {alert.emergencyType}
-                  </p>
-                  <p className="mt-1 text-xs text-white/30">
-                    {new Date(alert.createdAt).toLocaleString()}
-                  </p>
-                </div>
-                <span
-                  className={`rounded-full px-2.5 py-1 text-[10px] font-semibold capitalize ${
-                    alert.status === "resolved"
-                      ? "bg-[#34E7A6]/10 text-[#34E7A6]"
-                      : "bg-[#F0B429]/10 text-[#F0B429]"
-                  }`}
-                >
-                  {alert.status}
-                </span>
+        </div>
+        <div className="divide-y divide-white/[0.06]">
+          {recentAlerts.length === 0 && (
+            <p className="px-5 py-6 text-center text-sm text-white/30">
+              No emergency alerts yet.
+            </p>
+          )}
+          {recentAlerts.map((alert) => (
+            <div key={alert._id} className="flex items-center gap-4 px-5 py-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#34E7A6]/[0.07] text-[#34E7A6]">
+                <ShieldCheck size={18} />
               </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#34E7A6]/[0.07] text-[#34E7A6]">
-              <MapPin size={18} />
-            </div>
-            <div>
-              <p className="text-sm font-semibold">Your location</p>
-              <p className="text-xs text-white/30">
-                Used only during emergency alerts
-              </p>
-            </div>
-          </div>
-          <div className="mt-5 rounded-xl border border-white/[0.06] bg-black/10 p-4">
-            <div className="flex items-center gap-2">
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium capitalize">
+                  {alert.emergencyType}
+                </p>
+                <p className="mt-1 text-xs text-white/30">
+                  {new Date(alert.createdAt).toLocaleString()}
+                </p>
+              </div>
               <span
-                className={`h-2 w-2 rounded-full ${locationEnabled ? "bg-[#34E7A6]" : "bg-white/20"}`}
-              />
-              <span className="text-xs font-medium text-white/60">
-                {locationEnabled
-                  ? "Location ready"
-                  : "Location services available"}
+                className={`rounded-full px-2.5 py-1 text-[10px] font-semibold capitalize ${
+                  alert.status === "resolved"
+                    ? "bg-[#34E7A6]/10 text-[#34E7A6]"
+                    : "bg-[#F0B429]/10 text-[#F0B429]"
+                }`}
+              >
+                {alert.status}
               </span>
             </div>
-            <p className="mt-3 text-xs leading-relaxed text-white/30">
-              Your precise location will only be shared with authorized campus
-              responders when an emergency SOS is activated.
-            </p>
-          </div>
-          <button
-            onClick={enableLocation}
-            className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-white/[0.07] py-2.5 text-xs font-medium text-white/50 transition hover:border-[#34E7A6]/20 hover:text-[#34E7A6]"
-          >
-            <Navigation size={14} />
-            {locationEnabled ? "Location enabled" : "Enable location"}
-          </button>
-        </section>
-      </div>
+          ))}
+        </div>
+      </section>
 
       <div className="mt-8 flex items-start gap-3 rounded-2xl border border-white/[0.06] bg-white/[0.015] p-4">
         <ShieldCheck size={17} className="mt-0.5 shrink-0 text-[#34E7A6]" />
@@ -562,42 +500,10 @@ export default function StudentDashboard() {
                     className="w-full resize-none rounded-xl border border-white/[0.08] bg-white/[0.03] px-4 py-3 text-sm text-white outline-none placeholder:text-white/25 focus:border-[#34E7A6]/40"
                   />
                   <p className="mt-1.5 text-[11px] leading-relaxed text-white/30">
-                    GPS shares your general area — building floor, room, or
-                    landmark details help the response team find you faster.
+                    Shares your area — building floor, room, or landmark details
+                    help the response team find you faster.
                   </p>
                 </div>
-
-                <button
-                  onClick={enableLocation}
-                  className={`flex w-full items-center gap-3 rounded-xl border p-4 text-left transition ${
-                    locationEnabled
-                      ? "border-[#34E7A6]/20 bg-[#34E7A6]/[0.05]"
-                      : "border-white/[0.07] bg-white/[0.02] hover:border-white/15"
-                  }`}
-                >
-                  <div
-                    className={`flex h-9 w-9 items-center justify-center rounded-lg ${
-                      locationEnabled
-                        ? "bg-[#34E7A6]/10 text-[#34E7A6]"
-                        : "bg-white/[0.05] text-white/40"
-                    }`}
-                  >
-                    <MapPin size={17} />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-xs font-medium">
-                      {locationEnabled
-                        ? "Location ready to share"
-                        : "Share current location"}
-                    </p>
-                    <p className="mt-1 text-[11px] text-white/25">
-                      Only authorized responders can access this information.
-                    </p>
-                  </div>
-                  {locationEnabled && (
-                    <CheckCircle2 size={17} className="text-[#34E7A6]" />
-                  )}
-                </button>
               </div>
 
               <div className="flex flex-col-reverse gap-3 border-t border-white/[0.07] bg-white/[0.015] p-5 sm:flex-row sm:justify-end">
