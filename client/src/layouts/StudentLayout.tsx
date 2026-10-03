@@ -1,4 +1,4 @@
-import { useState, useEffect, ReactNode } from "react";
+import { useState, useEffect, useCallback, ReactNode } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -29,7 +29,6 @@ export default function StudentLayout({
 }: StudentLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
-
   const [notifDropdownOpen, setNotifDropdownOpen] = useState(false);
   const [recentNotifs, setRecentNotifs] = useState<any[]>([]);
 
@@ -39,27 +38,31 @@ export default function StudentLayout({
   const userRaw = localStorage.getItem("user");
   const user = userRaw ? JSON.parse(userRaw) : null;
 
-  useEffect(() => {
-    const loadNotifications = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const response = await fetch(
-          "http://localhost:5000/api/notifications",
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          },
-        );
-        const data = await response.json();
-        if (data.success) {
-          setUnreadCount(data.unreadCount);
-          setRecentNotifs(data.notifications.slice(0, 4));
-        }
-      } catch (err) {
-        console.error("Failed to load notifications:", err);
+  const loadNotifications = useCallback(async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch("http://localhost:5000/api/notifications", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await response.json();
+      if (data.success) {
+        setUnreadCount(data.unreadCount);
+        setRecentNotifs(data.notifications.slice(0, 4));
       }
-    };
+    } catch (err) {
+      console.error("Failed to load notifications:", err);
+    }
+  }, []);
+
+  useEffect(() => {
     loadNotifications();
-  }, [location.pathname]);
+  }, [location.pathname, loadNotifications]);
+
+  useEffect(() => {
+    window.addEventListener("notifications:changed", loadNotifications);
+    return () =>
+      window.removeEventListener("notifications:changed", loadNotifications);
+  }, [loadNotifications]);
 
   const closeSidebar = () => setSidebarOpen(false);
 
@@ -69,9 +72,23 @@ export default function StudentLayout({
     window.location.href = "/login";
   };
 
+  const markAllReadFromBell = async () => {
+    const opening = !notifDropdownOpen;
+    setNotifDropdownOpen(opening);
+    if (opening && unreadCount > 0) {
+      const token = localStorage.getItem("token");
+      await fetch("http://localhost:5000/api/notifications/read-all", {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setUnreadCount(0);
+      setRecentNotifs((prev) => prev.map((n) => ({ ...n, read: true })));
+      window.dispatchEvent(new Event("notifications:changed"));
+    }
+  };
+
   const navItems = [
     { label: "Dashboard", icon: ShieldCheck, path: "/student" },
-
     { label: "First Aid", icon: BookOpenText, path: "/student/first-aid" },
     {
       label: "Mental Health",
@@ -228,7 +245,7 @@ export default function StudentLayout({
           <div className="ml-auto flex items-center gap-3">
             <div className="relative">
               <button
-                onClick={() => setNotifDropdownOpen((prev) => !prev)}
+                onClick={markAllReadFromBell}
                 className="relative rounded-xl border border-white/[0.07] p-2.5 text-white/50 transition hover:border-white/15 hover:text-white"
               >
                 <Bell size={18} />
@@ -253,11 +270,6 @@ export default function StudentLayout({
                     >
                       <div className="flex items-center justify-between border-b border-white/[0.07] px-4 py-3">
                         <p className="text-sm font-semibold">Notifications</p>
-                        {unreadCount > 0 && (
-                          <span className="rounded-full bg-[#34E7A6]/10 px-2 py-0.5 text-[10px] font-semibold text-[#34E7A6]">
-                            {unreadCount} new
-                          </span>
-                        )}
                       </div>
 
                       <div className="max-h-80 overflow-y-auto">
@@ -277,9 +289,7 @@ export default function StudentLayout({
                           return (
                             <div
                               key={n._id}
-                              className={`flex items-start gap-3 border-b border-white/[0.05] px-4 py-3 last:border-0 ${
-                                !n.read ? "bg-[#34E7A6]/[0.03]" : ""
-                              }`}
+                              className="flex items-start gap-3 border-b border-white/[0.05] px-4 py-3 last:border-0"
                             >
                               <div
                                 className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
@@ -298,9 +308,6 @@ export default function StudentLayout({
                                   {n.message}
                                 </p>
                               </div>
-                              {!n.read && (
-                                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#34E7A6]" />
-                              )}
                             </div>
                           );
                         })}

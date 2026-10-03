@@ -48,6 +48,7 @@ export default function Notifications() {
       headers: { Authorization: `Bearer ${token}` },
     });
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    window.dispatchEvent(new Event("notifications:changed"));
   };
 
   const markOneRead = async (id: string) => {
@@ -59,6 +60,7 @@ export default function Notifications() {
     setNotifications((prev) =>
       prev.map((n) => (n._id === id ? { ...n, read: true } : n)),
     );
+    window.dispatchEvent(new Event("notifications:changed"));
   };
 
   const unreadCount = notifications.filter((n) => !n.read).length;
