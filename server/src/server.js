@@ -12,6 +12,7 @@ import mentalHealthRoutes from "./routes/mentalHealthRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
 import jwt from "jsonwebtoken";
 import User from "./models/User.js";
+import healthPostRoutes from "./routes/healthPostRoutes.js";
 
 dotenv.config();
 
@@ -90,6 +91,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/first-aid", firstAidRoutes);
 app.use("/api/mental-health", mentalHealthRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/health-posts", healthPostRoutes);
 
 // Health check
 app.get("/api/health", (req, res) => {

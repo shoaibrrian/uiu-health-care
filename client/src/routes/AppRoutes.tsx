@@ -12,6 +12,8 @@ import Notifications from "../pages/student/Notifications";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import AdminStudents from "../pages/admin/AdminStudents";
 import AdminSosHistory from "../pages/admin/AdminSosHistory";
+import MedicalProfile from "../pages/student/MedicalProfile";
+import HealthAwareness from "../pages/student/HealthAwareness";
 
 export default function AppRoutes() {
   return (
@@ -71,6 +73,15 @@ export default function AppRoutes() {
         />
 
         <Route
+          path="/student/medical-profile"
+          element={
+            <ProtectedRoute role="student">
+              <MedicalProfile />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
           path="/admin"
           element={
             <ProtectedRoute role="admin">
@@ -96,6 +107,15 @@ export default function AppRoutes() {
           }
         />
       </Routes>
+
+      <Route
+        path="/student/health-awareness"
+        element={
+          <ProtectedRoute role="student">
+            <HealthAwareness />
+          </ProtectedRoute>
+        }
+      />
     </BrowserRouter>
   );
 }

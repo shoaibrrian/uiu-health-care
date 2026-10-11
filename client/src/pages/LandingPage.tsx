@@ -6,6 +6,7 @@ import {
   MapPin,
   ArrowRight,
   AlertTriangle,
+  Phone,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -122,23 +123,23 @@ export default function LandingPage() {
         </motion.p>
 
         <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-          <button
-            onClick={() => navigate("/register")}
+          <a
+            href="#features"
             className="group flex items-center justify-center gap-2 rounded-full bg-[#34E7A6] px-7 py-3.5 text-sm font-semibold text-[#080C0B] transition-all hover:bg-[#5CFFC0]"
           >
-            Create your account
+            Explore features
             <ArrowRight
               size={16}
               className="transition-transform group-hover:translate-x-0.5"
             />
-          </button>
-
-          <button
-            onClick={() => navigate("/login?role=admin")}
-            className="rounded-full border border-white/12 px-7 py-3.5 text-sm font-semibold text-white/70 hover:border-white/25 hover:text-white"
+          </a>
+          <a
+            href="tel:999"
+            className="flex items-center justify-center gap-2 rounded-full border border-[#E5484D]/30 bg-[#E5484D]/[0.06] px-7 py-3.5 text-sm font-semibold text-[#FF7777] transition hover:border-[#E5484D]/50 hover:bg-[#E5484D]/10"
           >
-            Admin login
-          </button>
+            <Phone size={16} />
+            Emergency: 999
+          </a>
         </div>
 
         {/* Signature SOS panel */}

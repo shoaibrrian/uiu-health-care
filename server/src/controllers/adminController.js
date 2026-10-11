@@ -1,6 +1,7 @@
 import User from "../models/User.js";
 import SOSRequest from "../models/SOSRequest.js";
 import Notification from "../models/Notification.js";
+import MedicalProfile from "../models/MedicalProfile.js";
 
 // =========================
 // GET ALL SOS REQUESTS
@@ -15,12 +16,28 @@ export const getAllSOS = async (req, res) => {
     const requests = await SOSRequest.find(filter)
       .sort({ createdAt: -1 })
       .populate("student", "name email studentId program phone")
-      .populate("resolvedBy", "name email");
+      .populate("resolvedBy", "name email")
+      .lean();
+
+    // Attach each student's medical profile (if any)
+    const studentIds = [
+      ...new Set(requests.map((r) => String(r.student?._id))),
+    ];
+    const profiles = await MedicalProfile.find({
+      student: { $in: studentIds },
+    }).lean();
+
+    const profileMap = new Map(profiles.map((p) => [String(p.student), p]));
+
+    const withMedical = requests.map((r) => ({
+      ...r,
+      medicalProfile: profileMap.get(String(r.student?._id)) || null,
+    }));
 
     return res.status(200).json({
       success: true,
-      count: requests.length,
-      requests,
+      count: withMedical.length,
+      requests: withMedical,
     });
   } catch (error) {
     console.error("Get all SOS error:", error);

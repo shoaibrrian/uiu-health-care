@@ -3,6 +3,9 @@ import {
   getStudentDashboard,
   createSOS,
   getSOSHistory,
+  getMedicalProfile,
+  saveMedicalProfile,
+  deleteMedicalProfile,
 } from "../controllers/studentController.js";
 import { protect, authorize } from "../middleware/authMiddleware.js";
 
@@ -17,8 +20,11 @@ router.get("/dashboard", getStudentDashboard);
 
 // SOS
 router.post("/sos", createSOS);
-
-// SOS history
 router.get("/sos/history", getSOSHistory);
+
+// Medical profile
+router.get("/medical-profile", getMedicalProfile);
+router.put("/medical-profile", saveMedicalProfile);
+router.delete("/medical-profile", deleteMedicalProfile);
 
 export default router;

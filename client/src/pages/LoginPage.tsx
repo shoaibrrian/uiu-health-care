@@ -134,7 +134,7 @@ export default function LoginPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter your password"
                     required
-                    className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/20 focus:border-[#34E7A6]/50 focus:ring-2 focus:ring-[#34E7A6]/10"
+                    className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] mb-6 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/20 focus:border-[#34E7A6]/50 focus:ring-2 focus:ring-[#34E7A6]/10"
                   />
                 </div>
 
@@ -154,19 +154,7 @@ export default function LoginPage() {
                 </button>
               </form>
 
-              <div className="my-6 flex items-center gap-3">
-                <div className="h-px flex-1 bg-white/[0.08]" />
-                <span className="text-xs text-white/25">or</span>
-                <div className="h-px flex-1 bg-white/[0.08]" />
-              </div>
-
-              <Link
-                to="/admin/login"
-                className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/[0.08] py-3 text-sm font-medium text-white/60 transition hover:border-white/20 hover:text-white"
-              >
-                <ShieldCheck size={16} />
-                Admin login
-              </Link>
+              <div className="my-6 flex items-center gap-3"></div>
 
               <p className="mt-7 text-center text-sm text-white/35">
                 Don't have an account?{" "}

@@ -25,6 +25,14 @@ interface SosItem {
     program: string;
     phone: string;
   };
+  medicalProfile?: {
+    bloodGroup?: string;
+    allergies?: string[];
+    medicalConditions?: string[];
+    currentMedications?: string[];
+    emergencyContact?: { name?: string; relationship?: string; phone?: string };
+    additionalNotes?: string;
+  } | null;
 }
 
 interface Stats {
@@ -193,6 +201,61 @@ export default function AdminDashboard() {
                     </p>
                     {s.message && (
                       <p className="mt-2 text-sm text-white/60">{s.message}</p>
+                    )}
+                    {s.medicalProfile ? (
+                      <div className="mt-3 rounded-xl border border-[#F0B429]/20 bg-[#F0B429]/[0.05] p-3">
+                        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F0B429]">
+                          Medical info
+                        </p>
+                        <div className="mt-2 space-y-1 text-xs text-white/60">
+                          {s.medicalProfile.bloodGroup && (
+                            <p>
+                              <span className="text-white/35">
+                                Blood group:
+                              </span>{" "}
+                              <span className="font-semibold text-white/80">
+                                {s.medicalProfile.bloodGroup}
+                              </span>
+                            </p>
+                          )}
+                          {!!s.medicalProfile.allergies?.length && (
+                            <p>
+                              <span className="text-white/35">Allergies:</span>{" "}
+                              {s.medicalProfile.allergies.join(", ")}
+                            </p>
+                          )}
+                          {!!s.medicalProfile.medicalConditions?.length && (
+                            <p>
+                              <span className="text-white/35">Conditions:</span>{" "}
+                              {s.medicalProfile.medicalConditions.join(", ")}
+                            </p>
+                          )}
+                          {!!s.medicalProfile.currentMedications?.length && (
+                            <p>
+                              <span className="text-white/35">
+                                Medications:
+                              </span>{" "}
+                              {s.medicalProfile.currentMedications.join(", ")}
+                            </p>
+                          )}
+                          {s.medicalProfile.emergencyContact?.phone && (
+                            <p>
+                              <span className="text-white/35">
+                                Emergency contact:
+                              </span>{" "}
+                              {s.medicalProfile.emergencyContact.name}
+                              {s.medicalProfile.emergencyContact.relationship
+                                ? ` (${s.medicalProfile.emergencyContact.relationship})`
+                                : ""}{" "}
+                              · {s.medicalProfile.emergencyContact.phone}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="mt-3 text-xs text-white/30">
+                        No medical profile on file.
+                      </p>
                     )}
                     <p className="mt-2 text-[11px] text-white/25">
                       {new Date(s.createdAt).toLocaleString()}

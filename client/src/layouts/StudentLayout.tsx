@@ -16,6 +16,7 @@ import {
   Siren,
   Info,
   CheckCircle2,
+  Megaphone,
 } from "lucide-react";
 import { disconnectSocket } from "../lib/socket";
 
@@ -97,7 +98,17 @@ export default function StudentLayout({
       icon: MessageCircleHeart,
       path: "/student/mental-health",
     },
+    {
+      label: "Health Awareness",
+      icon: Megaphone,
+      path: "/student/health-awareness",
+    },
     { label: "Nearby Hospitals", icon: Hospital, path: "/student/hospitals" },
+    {
+      label: "Medical Profile",
+      icon: HeartPulse,
+      path: "/student/medical-profile",
+    },
   ];
 
   return (
