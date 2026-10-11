@@ -64,7 +64,6 @@ export default function AdminDashboard() {
   useEffect(() => {
     loadData();
     const socket = connectSocket();
-    socket.emit("join-admin-room");
 
     socket.on("sos:new", () => loadData());
     socket.on("sos:updated", () => loadData());

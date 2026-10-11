@@ -127,9 +127,6 @@ export default function StudentDashboard() {
     loadDashboard();
 
     const socket = connectSocket();
-    const studentUser = localStorage.getItem("user");
-    const studentId = studentUser ? JSON.parse(studentUser).id : null;
-    if (studentId) socket.emit("join-student-room", studentId);
 
     socket.on("sos:resolved", () => {
       setSOSStatus("resolved");

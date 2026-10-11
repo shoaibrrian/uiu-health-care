@@ -10,6 +10,7 @@ import {
   Users,
   X,
 } from "lucide-react";
+import { disconnectSocket } from "../lib/socket";
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -31,6 +32,7 @@ export default function AdminLayout({ children, pageTitle }: AdminLayoutProps) {
   const admin = userRaw ? JSON.parse(userRaw) : null;
 
   const logout = () => {
+    disconnectSocket();
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     window.location.href = "/login";

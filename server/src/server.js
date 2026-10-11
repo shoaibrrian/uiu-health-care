@@ -10,6 +10,8 @@ import adminRoutes from "./routes/adminRoutes.js";
 import firstAidRoutes from "./routes/firstAidRoutes.js";
 import mentalHealthRoutes from "./routes/mentalHealthRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
+import jwt from "jsonwebtoken";
+import User from "./models/User.js";
 
 dotenv.config();
 
@@ -30,22 +32,41 @@ const io = new Server(httpServer, {
   },
 });
 
+// Verify JWT before allowing any socket connection
+io.use(async (socket, next) => {
+  try {
+    const token = socket.handshake.auth?.token;
+
+    if (!token) {
+      return next(new Error("Authentication required"));
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.userId).select("-password");
+
+    if (!user || user.isActive === false) {
+      return next(new Error("Invalid user"));
+    }
+
+    socket.user = user;
+    next();
+  } catch (error) {
+    next(new Error("Invalid or expired token"));
+  }
+});
+
 io.on("connection", (socket) => {
-  console.log(`Socket connected: ${socket.id}`);
+  const user = socket.user;
 
-  // Admin joins a room to receive all SOS broadcasts
-  socket.on("join-admin-room", () => {
+  // Server decides the room, client cannot choose
+  if (user.role === "admin") {
     socket.join("admins");
-    console.log(`Socket ${socket.id} joined admin room`);
-  });
-
-  // Student joins a personal room to receive status updates
-  socket.on("join-student-room", (studentId) => {
-    socket.join(`student-${studentId}`);
-  });
+  } else {
+    socket.join(`student-${user._id}`);
+  }
 
   socket.on("disconnect", () => {
-    console.log(`Socket disconnected: ${socket.id}`);
+    console.log(`Socket disconnected: ${user.email}`);
   });
 });
 

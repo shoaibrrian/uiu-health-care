@@ -17,6 +17,7 @@ import {
   Info,
   CheckCircle2,
 } from "lucide-react";
+import { disconnectSocket } from "../lib/socket";
 
 interface StudentLayoutProps {
   children: ReactNode;
@@ -67,6 +68,7 @@ export default function StudentLayout({
   const closeSidebar = () => setSidebarOpen(false);
 
   const logout = () => {
+    disconnectSocket();
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     window.location.href = "/login";
