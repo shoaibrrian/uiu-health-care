@@ -4,6 +4,7 @@ import {
   HeartPulse,
   LayoutDashboard,
   LogOut,
+  Megaphone,
   Menu,
   ShieldCheck,
   Siren,
@@ -21,6 +22,7 @@ const navItems = [
   { label: "Dashboard", icon: LayoutDashboard, path: "/admin" },
   { label: "Students", icon: Users, path: "/admin/students" },
   { label: "SOS History", icon: Siren, path: "/admin/sos-history" },
+  { label: "Content", icon: Megaphone, path: "/admin/content" },
 ];
 
 export default function AdminLayout({ children, pageTitle }: AdminLayoutProps) {

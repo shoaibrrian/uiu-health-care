@@ -7,13 +7,17 @@ import User from "../models/User.js";
 dotenv.config();
 
 const run = async () => {
+  const email = process.env.ADMIN_EMAIL;
+  const plainPassword = process.env.ADMIN_PASSWORD;
+
+  if (!email || !plainPassword) {
+    console.error("Set ADMIN_EMAIL and ADMIN_PASSWORD in server/.env first.");
+    process.exit(1);
+  }
+
   await connectDB();
 
-  const email = "admin@uiu.ac.bd";
-  const plainPassword = "Admin@12345";
-
   const hashedPassword = await bcrypt.hash(plainPassword, 12);
-
   const existing = await User.findOne({ email });
 
   if (existing) {
@@ -21,7 +25,7 @@ const run = async () => {
     existing.role = "admin";
     existing.isActive = true;
     await existing.save();
-    console.log("Admin password reset successfully!");
+    console.log("Admin password updated.");
   } else {
     await User.create({
       name: "System Admin",
@@ -32,13 +36,8 @@ const run = async () => {
       isVerified: true,
       isActive: true,
     });
-    console.log("Admin created successfully!");
+    console.log("Admin created.");
   }
-
-  console.log("Email:", email);
-  console.log(
-    "Admin credentials set. Check your script file for the password, then delete/secure this file.",
-  );
 
   await mongoose.disconnect();
 };

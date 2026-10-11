@@ -9,11 +9,12 @@ import MentalHealth from "../pages/student/MentalHealth";
 import HospitalFinder from "../pages/student/HospitalFinder";
 import EmergencyHistory from "../pages/student/EmergencyHistory";
 import Notifications from "../pages/student/Notifications";
+import MedicalProfile from "../pages/student/MedicalProfile";
+import HealthAwareness from "../pages/student/HealthAwareness";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import AdminStudents from "../pages/admin/AdminStudents";
 import AdminSosHistory from "../pages/admin/AdminSosHistory";
-import MedicalProfile from "../pages/student/MedicalProfile";
-import HealthAwareness from "../pages/student/HealthAwareness";
+import AdminContent from "../pages/admin/AdminContent";
 
 export default function AppRoutes() {
   return (
@@ -71,12 +72,19 @@ export default function AppRoutes() {
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/student/medical-profile"
           element={
             <ProtectedRoute role="student">
               <MedicalProfile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/student/health-awareness"
+          element={
+            <ProtectedRoute role="student">
+              <HealthAwareness />
             </ProtectedRoute>
           }
         />
@@ -89,7 +97,6 @@ export default function AppRoutes() {
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/admin/students"
           element={
@@ -106,16 +113,15 @@ export default function AppRoutes() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/admin/content"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminContent />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
-
-      <Route
-        path="/student/health-awareness"
-        element={
-          <ProtectedRoute role="student">
-            <HealthAwareness />
-          </ProtectedRoute>
-        }
-      />
     </BrowserRouter>
   );
 }
