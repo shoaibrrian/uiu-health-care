@@ -10,6 +10,8 @@ import HospitalFinder from "../pages/student/HospitalFinder";
 import EmergencyHistory from "../pages/student/EmergencyHistory";
 import Notifications from "../pages/student/Notifications";
 import AdminDashboard from "../pages/admin/AdminDashboard";
+import AdminStudents from "../pages/admin/AdminStudents";
+import AdminSosHistory from "../pages/admin/AdminSosHistory";
 
 export default function AppRoutes() {
   return (
@@ -73,6 +75,23 @@ export default function AppRoutes() {
           element={
             <ProtectedRoute role="admin">
               <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/students"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminStudents />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/sos-history"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminSosHistory />
             </ProtectedRoute>
           }
         />
