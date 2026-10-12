@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Megaphone } from "lucide-react";
 import StudentLayout from "../../layouts/StudentLayout";
+import { API_URL } from "../../lib/config";
 
 interface Post {
   _id: string;
@@ -29,7 +30,7 @@ export default function HealthAwareness() {
     const load = async () => {
       try {
         const token = localStorage.getItem("token");
-        const response = await fetch("http://localhost:5000/api/health-posts", {
+        const response = await fetch(`${API_URL}/api/health-posts`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await response.json();

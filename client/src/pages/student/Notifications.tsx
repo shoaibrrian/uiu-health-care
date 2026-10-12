@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Bell, Siren, CheckCircle2, Info } from "lucide-react";
 import StudentLayout from "../../layouts/StudentLayout";
+import { API_URL } from "../../lib/config";
 
 interface NotificationItem {
   _id: string;
@@ -25,7 +26,7 @@ export default function Notifications() {
   const load = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("http://localhost:5000/api/notifications", {
+      const response = await fetch(`${API_URL}/api/notifications`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await response.json();
@@ -43,7 +44,7 @@ export default function Notifications() {
 
   const markAllRead = async () => {
     const token = localStorage.getItem("token");
-    await fetch("http://localhost:5000/api/notifications/read-all", {
+    await fetch(`${API_URL}/api/notifications/read-all`, {
       method: "PATCH",
       headers: { Authorization: `Bearer ${token}` },
     });

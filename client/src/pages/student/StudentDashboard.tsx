@@ -17,6 +17,7 @@ import {
 import { connectSocket } from "../../lib/socket";
 import { useNavigate } from "react-router-dom";
 import StudentLayout from "../../layouts/StudentLayout";
+import { API_URL } from "../../lib/config";
 
 const quickActions = [
   {
@@ -74,7 +75,7 @@ export default function StudentDashboard() {
         return;
       }
 
-      const response = await fetch("http://localhost:5000/api/students/sos", {
+      const response = await fetch(`${API_URL}/api/students/sos`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -105,12 +106,9 @@ export default function StudentDashboard() {
           window.location.href = "/login";
           return;
         }
-        const response = await fetch(
-          "http://localhost:5000/api/students/dashboard",
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          },
-        );
+        const response = await fetch(`${API_URL}/api/students/dashboard`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         const data = await response.json();
         if (!response.ok)
           throw new Error(data.message || "Failed to load dashboard");

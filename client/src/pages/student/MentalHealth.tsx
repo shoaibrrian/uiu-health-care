@@ -9,6 +9,7 @@ import {
   UserRound,
 } from "lucide-react";
 import StudentLayout from "../../layouts/StudentLayout";
+import { API_URL } from "../../lib/config";
 
 interface Resource {
   _id: string;
@@ -34,12 +35,9 @@ export default function MentalHealth() {
     const load = async () => {
       try {
         const token = localStorage.getItem("token");
-        const response = await fetch(
-          "http://localhost:5000/api/mental-health",
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          },
-        );
+        const response = await fetch(`${API_URL}/api/mental-health`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         const data = await response.json();
         if (data.success) setResources(data.resources);
       } catch (err) {

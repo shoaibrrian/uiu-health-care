@@ -19,6 +19,7 @@ import {
   Megaphone,
 } from "lucide-react";
 import { disconnectSocket } from "../lib/socket";
+import { API_URL } from "../lib/config";
 
 interface StudentLayoutProps {
   children: ReactNode;
@@ -43,7 +44,7 @@ export default function StudentLayout({
   const loadNotifications = useCallback(async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("http://localhost:5000/api/notifications", {
+      const response = await fetch(`${API_URL}/api/notifications`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await response.json();
@@ -80,7 +81,7 @@ export default function StudentLayout({
     setNotifDropdownOpen(opening);
     if (opening && unreadCount > 0) {
       const token = localStorage.getItem("token");
-      await fetch("http://localhost:5000/api/notifications/read-all", {
+      await fetch(`${API_URL}/api/notifications/read-all`, {
         method: "PATCH",
         headers: { Authorization: `Bearer ${token}` },
       });

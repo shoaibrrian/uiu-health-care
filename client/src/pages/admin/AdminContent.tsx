@@ -2,6 +2,7 @@ import { useEffect, useState, FormEvent } from "react";
 import { motion } from "framer-motion";
 import { Megaphone, Trash2, Loader2 } from "lucide-react";
 import AdminLayout from "../../layouts/AdminLayout";
+import { API_URL } from "../../lib/config";
 
 interface Post {
   _id: string;
@@ -37,7 +38,7 @@ export default function AdminContent() {
 
   const loadPosts = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/health-posts", {
+      const response = await fetch(`${API_URL}/api/health-posts`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await response.json();
@@ -60,7 +61,7 @@ export default function AdminContent() {
     setPublishing(true);
 
     try {
-      const response = await fetch("http://localhost:5000/api/health-posts", {
+      const response = await fetch(`${API_URL}/api/health-posts`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

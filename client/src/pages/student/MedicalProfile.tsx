@@ -1,6 +1,7 @@
 import { useEffect, useState, FormEvent } from "react";
 import { HeartPulse, Loader2, CheckCircle2 } from "lucide-react";
 import StudentLayout from "../../layouts/StudentLayout";
+import { API_URL } from "../../lib/config";
 
 const bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
@@ -33,7 +34,7 @@ export default function MedicalProfile() {
       try {
         const token = localStorage.getItem("token");
         const response = await fetch(
-          "http://localhost:5000/api/students/medical-profile",
+          `${API_URL}/api/students/medical-profile`,
           { headers: { Authorization: `Bearer ${token}` } },
         );
         const data = await response.json();
@@ -66,28 +67,25 @@ export default function MedicalProfile() {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(
-        "http://localhost:5000/api/students/medical-profile",
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            bloodGroup,
-            allergies: toList(allergies),
-            medicalConditions: toList(conditions),
-            currentMedications: toList(medications),
-            emergencyContact: {
-              name: contactName,
-              relationship: contactRelation,
-              phone: contactPhone,
-            },
-            additionalNotes: notes,
-          }),
+      const response = await fetch(`${API_URL}/api/students/medical-profile`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-      );
+        body: JSON.stringify({
+          bloodGroup,
+          allergies: toList(allergies),
+          medicalConditions: toList(conditions),
+          currentMedications: toList(medications),
+          emergencyContact: {
+            name: contactName,
+            relationship: contactRelation,
+            phone: contactPhone,
+          },
+          additionalNotes: notes,
+        }),
+      });
       const data = await response.json();
 
       if (!response.ok) {

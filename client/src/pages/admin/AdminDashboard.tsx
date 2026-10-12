@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { connectSocket } from "../../lib/socket";
 import AdminLayout from "../../layouts/AdminLayout";
+import { API_URL } from "../../lib/config";
 
 interface SosItem {
   _id: string;
@@ -51,10 +52,10 @@ export default function AdminDashboard() {
   const loadData = async () => {
     try {
       const [sosRes, statsRes] = await Promise.all([
-        fetch("http://localhost:5000/api/admin/sos", {
+        fetch(`${API_URL}/api/admin/sos`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        fetch("http://localhost:5000/api/admin/stats", {
+        fetch(`${API_URL}/api/admin/stats`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
       ]);
@@ -84,14 +85,14 @@ export default function AdminDashboard() {
   }, []);
 
   const acknowledge = async (id: string) => {
-    await fetch(`http://localhost:5000/api/admin/sos/${id}/acknowledge`, {
+    await fetch(`${API_URL}/api/admin/sos/${id}/acknowledge`, {
       method: "PATCH",
       headers: { Authorization: `Bearer ${token}` },
     });
   };
 
   const resolve = async (id: string) => {
-    await fetch(`http://localhost:5000/api/admin/sos/${id}/resolve`, {
+    await fetch(`${API_URL}/api/admin/sos/${id}/resolve`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",

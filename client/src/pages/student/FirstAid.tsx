@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { HeartPulse, ChevronDown, AlertTriangle } from "lucide-react";
 import StudentLayout from "../../layouts/StudentLayout";
+import { API_URL } from "../../lib/config";
 
 interface Guide {
   _id: string;
@@ -26,7 +27,7 @@ export default function FirstAid() {
     const load = async () => {
       try {
         const token = localStorage.getItem("token");
-        const response = await fetch("http://localhost:5000/api/first-aid", {
+        const response = await fetch(`${API_URL}/api/first-aid`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await response.json();

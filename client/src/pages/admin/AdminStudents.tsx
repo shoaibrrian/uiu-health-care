@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Users, Search, Phone, Mail } from "lucide-react";
 import AdminLayout from "../../layouts/AdminLayout";
+import { API_URL } from "../../lib/config";
 
 interface Student {
   _id: string;
@@ -21,12 +22,9 @@ export default function AdminStudents() {
     const load = async () => {
       try {
         const token = localStorage.getItem("token");
-        const response = await fetch(
-          "http://localhost:5000/api/admin/students",
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          },
-        );
+        const response = await fetch(`${API_URL}/api/admin/students`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         const data = await response.json();
         if (data.success) setStudents(data.students);
       } catch (err) {

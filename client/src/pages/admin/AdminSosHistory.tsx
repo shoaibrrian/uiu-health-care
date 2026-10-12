@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Siren, Search, Phone, FileText } from "lucide-react";
 import AdminLayout from "../../layouts/AdminLayout";
+import { API_URL } from "../../lib/config";
 
 interface SosRecord {
   _id: string;
@@ -45,7 +46,7 @@ export default function AdminSosHistory() {
     const load = async () => {
       try {
         const token = localStorage.getItem("token");
-        const response = await fetch("http://localhost:5000/api/admin/sos", {
+        const response = await fetch(`${API_URL}/api/admin/sos`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await response.json();
